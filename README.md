@@ -3,15 +3,14 @@
 A modern lightweight web interface for qBittorrent, built with Vite.
 
 [More images below](#preview)
-
-<img width="1920" height="1080" alt="demo" src="https://github.com/user-attachments/assets/a1241d7a-2258-476e-a669-c9f316973188" />
+<img width="1798" height="1080" alt="demo_new" src="https://github.com/user-attachments/assets/4d8acb4b-a474-4c31-8ece-edd3a88cee7d" />
 
 ## Features
 
 - Real-time torrent monitoring with auto-refresh
 - Add torrents via magnet links or .torrent files
 - Detailed torrent view (general info, trackers, peers, files)
-- Filter by status (all, downloading, seeding, active, stopped)
+- Filter by status (all, downloading, seeding, active, stopped), filter by tracker or category.
 - Multi-select with bulk actions (start, stop, delete)
 - Dark theme
 
@@ -51,9 +50,6 @@ React 19, TypeScript, Tailwind CSS v4, Vite, TanStack Query
 
 ## Preview
 <table>
-  <tr>
-    <td colspan="2"><img src="https://github.com/user-attachments/assets/81458271-608a-45be-a9f8-e9e3883e3c72" alt="demo2" /></td>
-  </tr>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/b2aa1367-00ad-4ddb-ae5f-0f364046a435" alt="demo3" /></td>
     <td><img src="https://github.com/user-attachments/assets/048245a9-e751-4965-9ad9-862570079019" alt="demo4" /></td>
