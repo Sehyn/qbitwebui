@@ -2,16 +2,15 @@ import { useState, useMemo, useEffect } from 'react'
 import type { TorrentFilter, Torrent } from '../types/qbittorrent'
 import { useTorrents, useStopTorrents, useStartTorrents, useDeleteTorrents, useCategories, useTags, useCreateCategory, useDeleteCategory, useCreateTag, useDeleteTag } from '../hooks/useTorrents'
 import { TorrentRow } from './TorrentRow'
-import { FilterBar, SearchInput, CategoryDropdown, TagDropdown, TrackerDropdown } from './FilterBar'
+import { FilterBar, SearchInput, CategoryDropdown, TagDropdown, TrackerDropdown, ColumnSelector } from './FilterBar'
 import { AddTorrentModal } from './AddTorrentModal'
 import { TorrentDetailsPanel } from './TorrentDetailsPanel'
 import { ContextMenu } from './ContextMenu'
 import { RatioThresholdPopup } from './RatioThresholdPopup'
 import { loadRatioThreshold, saveRatioThreshold } from '../utils/ratioThresholds'
+import { COLUMNS, DEFAULT_VISIBLE_COLUMNS, DEFAULT_COLUMN_ORDER, type SortKey } from './columns'
 
 const DEFAULT_PANEL_HEIGHT = 220
-
-type SortKey = 'name' | 'progress' | 'downloaded' | 'uploaded' | 'dlspeed' | 'upspeed' | 'ratio' | 'seeding_time' | 'added_on'
 
 function SortIcon({ active, asc }: { active: boolean; asc: boolean }) {
 	return (
@@ -73,6 +72,37 @@ export function TorrentList() {
 	const [ratioThreshold, setRatioThreshold] = useState(loadRatioThreshold)
 	const [ratioPopupAnchor, setRatioPopupAnchor] = useState<HTMLElement | null>(null)
 
+	const [visibleColumns, setVisibleColumns] = useState<Set<string>>(() => {
+		const stored = localStorage.getItem('visibleColumns')
+		if (stored) return new Set(JSON.parse(stored))
+		return new Set(DEFAULT_VISIBLE_COLUMNS)
+	})
+
+	const [columnOrder, setColumnOrder] = useState<string[]>(() => {
+		const stored = localStorage.getItem('columnOrder')
+		if (stored) return JSON.parse(stored)
+		return DEFAULT_COLUMN_ORDER
+	})
+
+	function handleColumnChange(next: Set<string>) {
+		setVisibleColumns(next)
+		localStorage.setItem('visibleColumns', JSON.stringify([...next]))
+	}
+
+	function handleColumnReorder(next: string[]) {
+		setColumnOrder(next)
+		localStorage.setItem('columnOrder', JSON.stringify(next))
+	}
+
+	function handleColumnsReset() {
+		setVisibleColumns(new Set(DEFAULT_VISIBLE_COLUMNS))
+		setColumnOrder(DEFAULT_COLUMN_ORDER)
+		localStorage.setItem('visibleColumns', JSON.stringify([...DEFAULT_VISIBLE_COLUMNS]))
+		localStorage.setItem('columnOrder', JSON.stringify(DEFAULT_COLUMN_ORDER))
+	}
+
+	const orderedColumns = columnOrder.map(id => COLUMNS.find(c => c.id === id)).filter((c): c is typeof COLUMNS[number] => c !== undefined)
+
 	const { data: categories = {} } = useCategories()
 	const { data: tags = [] } = useTags()
 	const { data: torrents = [], isLoading } = useTorrents({
@@ -107,8 +137,16 @@ export function TorrentList() {
 		}
 		result = [...result].sort((a, b) => {
 			const mul = sortAsc ? 1 : -1
-			if (sortKey === 'name') return mul * a.name.localeCompare(b.name)
-			return mul * (a[sortKey] - b[sortKey])
+			const valA = a[sortKey]
+			const valB = b[sortKey]
+
+			if (typeof valA === 'string' && typeof valB === 'string') {
+				return mul * valA.localeCompare(valB)
+			}
+			if (typeof valA === 'number' && typeof valB === 'number') {
+				return mul * (valA - valB)
+			}
+			return 0
 		})
 		return result
 	}, [torrents, tagFilter, trackerFilter, search, sortKey, sortAsc])
@@ -248,6 +286,15 @@ export function TorrentList() {
 					/>
 					<div className="w-px h-5" style={{ backgroundColor: 'var(--border)' }} />
 					<TrackerDropdown value={trackerFilter} onChange={setTrackerFilter} trackers={uniqueTrackers} />
+					<div className="w-px h-5" style={{ backgroundColor: 'var(--border)' }} />
+					<ColumnSelector
+						columns={COLUMNS}
+						visible={visibleColumns}
+						onChange={handleColumnChange}
+						columnOrder={columnOrder}
+						onReorder={handleColumnReorder}
+						onReset={handleColumnsReset}
+					/>
 				</div>
 
 				<div className="flex-1" />
@@ -282,103 +329,45 @@ export function TorrentList() {
 										<SortIcon active={sortKey === 'name'} asc={sortAsc} />
 									</button>
 								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('progress')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Progress
-										<SortIcon active={sortKey === 'progress'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Status</span>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('downloaded')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Down
-										<SortIcon active={sortKey === 'downloaded'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('uploaded')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Up
-										<SortIcon active={sortKey === 'uploaded'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('dlspeed')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										<span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' }} />
-										Speed
-										<SortIcon active={sortKey === 'dlspeed'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('upspeed')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										<span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--warning) 40%, transparent)' }} />
-										Speed
-										<SortIcon active={sortKey === 'upspeed'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<div className="flex items-center gap-1">
-										<button
-											onClick={() => handleSort('ratio')}
-											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-											style={{ color: 'var(--text-muted)' }}
-										>
-											Ratio
-											<SortIcon active={sortKey === 'ratio'} asc={sortAsc} />
-										</button>
-										<button
-											onClick={(e) => setRatioPopupAnchor(e.currentTarget)}
-											className="p-0.5 rounded opacity-50 hover:opacity-100 transition-opacity"
-											title="Configure ratio colors"
-										>
-											<svg className="w-3 h-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-												<path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-												<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-											</svg>
-										</button>
-									</div>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('seeding_time')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Seed Time
-										<SortIcon active={sortKey === 'seeding_time'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('added_on')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Added
-										<SortIcon active={sortKey === 'added_on'} asc={sortAsc} />
-									</button>
-								</th>
+								{orderedColumns.filter(col => visibleColumns.has(col.id)).map(col => (
+									<th key={col.id} className="px-3 py-2.5 text-left whitespace-nowrap">
+										{col.id === 'ratio' ? (
+											<div className="flex items-center gap-1">
+												<button
+													onClick={() => handleSort('ratio')}
+													className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+													style={{ color: 'var(--text-muted)' }}
+												>
+													Ratio
+													<SortIcon active={sortKey === 'ratio'} asc={sortAsc} />
+												</button>
+												<button
+													onClick={(e) => setRatioPopupAnchor(e.currentTarget)}
+													className="p-0.5 rounded opacity-50 hover:opacity-100 transition-opacity"
+													title="Configure ratio colors"
+												>
+													<svg className="w-3 h-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+														<path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+														<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													</svg>
+												</button>
+											</div>
+										) : col.sortKey ? (
+											<button
+												onClick={() => handleSort(col.sortKey!)}
+												className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+												style={{ color: 'var(--text-muted)' }}
+											>
+												{col.id === 'dlspeed' && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' }} />}
+												{col.id === 'upspeed' && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--warning) 40%, transparent)' }} />}
+												{col.id === 'dlspeed' || col.id === 'upspeed' ? 'Speed' : col.label}
+												<SortIcon active={sortKey === col.sortKey} asc={sortAsc} />
+											</button>
+										) : (
+											<span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{col.label}</span>
+										)}
+									</th>
+								))}
 							</tr>
 						</thead>
 						<tbody>
@@ -390,6 +379,8 @@ export function TorrentList() {
 									onSelect={handleSelect}
 									onContextMenu={(e) => handleContextMenu(e, t)}
 									ratioThreshold={ratioThreshold}
+									visibleColumns={visibleColumns}
+									columnOrder={columnOrder}
 								/>
 							))}
 						</tbody>

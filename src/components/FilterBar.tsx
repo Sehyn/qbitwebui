@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 import type { TorrentFilter } from '../types/qbittorrent'
 import type { Category } from '../api/qbittorrent'
+import type { ColumnDef } from './columns'
 
 const filters: { value: TorrentFilter; label: string; icon: ReactNode }[] = [
 	{
@@ -424,5 +425,119 @@ export function TrackerDropdown({ value, onChange, trackers }: TrackerDropdownPr
 			placeholder="Tracker"
 			icon={<path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />}
 		/>
+	)
+}
+
+interface ColumnSelectorProps {
+	columns: ColumnDef[]
+	visible: Set<string>
+	onChange: (visible: Set<string>) => void
+	columnOrder: string[]
+	onReorder: (order: string[]) => void
+	onReset: () => void
+}
+
+export function ColumnSelector({ columns, visible, onChange, columnOrder, onReorder, onReset }: ColumnSelectorProps) {
+	const [open, setOpen] = useState(false)
+	const [draggedId, setDraggedId] = useState<string | null>(null)
+	const ref = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		function handleClickOutside(e: MouseEvent) {
+			if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+		}
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [])
+
+	function toggle(id: string) {
+		const next = new Set(visible)
+		if (next.has(id)) next.delete(id)
+		else next.add(id)
+		onChange(next)
+	}
+
+	function handleDragStart(e: React.DragEvent, id: string) {
+		setDraggedId(id)
+		e.dataTransfer.effectAllowed = 'move'
+	}
+
+	function handleDragOver(e: React.DragEvent, targetId: string) {
+		e.preventDefault()
+		if (!draggedId || draggedId === targetId) return
+		const dragIdx = columnOrder.indexOf(draggedId)
+		const targetIdx = columnOrder.indexOf(targetId)
+		if (dragIdx === -1 || targetIdx === -1) return
+		const newOrder = [...columnOrder]
+		newOrder.splice(dragIdx, 1)
+		newOrder.splice(targetIdx, 0, draggedId)
+		onReorder(newOrder)
+	}
+
+	function handleDragEnd() {
+		setDraggedId(null)
+	}
+
+	const orderedColumns = columnOrder.map(id => columns.find(c => c.id === id)).filter((c): c is ColumnDef => c !== undefined)
+
+	return (
+		<div ref={ref} className="relative">
+			<button
+				onClick={() => setOpen(!open)}
+				className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200"
+				style={{ color: 'var(--text-muted)' }}
+				title="Configure columns"
+			>
+				<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25v9.75m0 0h9.75" />
+				</svg>
+				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+				</svg>
+			</button>
+			{open && (
+				<div
+					className="absolute top-full right-0 mt-1 min-w-[200px] max-h-[400px] overflow-auto rounded-lg border shadow-xl z-[100]"
+					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
+				>
+					<div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
+						<span className="text-[10px] uppercase tracking-widest font-medium" style={{ color: 'var(--text-muted)' }}>Columns</span>
+						<button
+							onClick={() => { onReset(); setOpen(false) }}
+							className="text-[10px] transition-colors hover:opacity-80"
+							style={{ color: 'var(--accent)' }}
+						>
+							Reset
+						</button>
+					</div>
+					{orderedColumns.map((col) => (
+						<div
+							key={col.id}
+							draggable
+							onDragStart={(e) => handleDragStart(e, col.id)}
+							onDragOver={(e) => handleDragOver(e, col.id)}
+							onDragEnd={handleDragEnd}
+							className={`flex items-center gap-2 px-2 py-2 text-xs transition-colors hover:bg-white/5 cursor-move ${draggedId === col.id ? 'opacity-50' : ''}`}
+							style={{ color: 'var(--text-primary)' }}
+						>
+							<svg className="w-3 h-3 shrink-0" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+							</svg>
+							<button
+								onClick={() => toggle(col.id)}
+								className="flex-1 flex items-center justify-between text-left"
+							>
+								<span>{col.label}</span>
+								{visible.has(col.id) && (
+									<svg className="w-3 h-3" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+									</svg>
+								)}
+							</button>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
 	)
 }
