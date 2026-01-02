@@ -426,3 +426,76 @@ export function TrackerDropdown({ value, onChange, trackers }: TrackerDropdownPr
 		/>
 	)
 }
+export interface Column {
+	id: string
+	label: string
+}
+
+interface ColumnSelectorProps {
+	columns: Column[]
+	visible: Set<string>
+	onChange: (visible: Set<string>) => void
+}
+
+export function ColumnSelector({ columns, visible, onChange }: ColumnSelectorProps) {
+	const [open, setOpen] = useState(false)
+	const ref = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		function handleClickOutside(e: MouseEvent) {
+			if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+		}
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [])
+
+	function toggle(id: string) {
+		const next = new Set(visible)
+		if (next.has(id)) next.delete(id)
+		else next.add(id)
+		onChange(next)
+	}
+
+	return (
+		<div ref={ref} className="relative">
+			<button
+				onClick={() => setOpen(!open)}
+				className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200"
+				style={{ color: 'var(--text-muted)' }}
+				title="Configure columns"
+			>
+				<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25v9.75m0 0h9.75" />
+				</svg>
+				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+				</svg>
+			</button>
+			{open && (
+				<div
+					className="absolute top-full right-0 mt-1 min-w-[180px] max-h-[300px] overflow-auto rounded-lg border shadow-xl z-[100]"
+					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
+				>
+					<div className="px-3 py-2 text-[10px] uppercase tracking-widest font-medium border-b" style={{ color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
+						Columns
+					</div>
+					{columns.map((col) => (
+						<button
+							key={col.id}
+							onClick={() => toggle(col.id)}
+							className="w-full flex items-center justify-between px-3 py-2 text-xs text-left transition-colors hover:bg-white/5"
+							style={{ color: 'var(--text-primary)' }}
+						>
+							<span>{col.label}</span>
+							{visible.has(col.id) && (
+								<svg className="w-3 h-3" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+									<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+								</svg>
+							)}
+						</button>
+					))}
+				</div>
+			)}
+		</div>
+	)
+}

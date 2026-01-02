@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import type { TorrentFilter, Torrent } from '../types/qbittorrent'
 import { useTorrents, useStopTorrents, useStartTorrents, useDeleteTorrents, useCategories, useTags, useCreateCategory, useDeleteCategory, useCreateTag, useDeleteTag } from '../hooks/useTorrents'
 import { TorrentRow } from './TorrentRow'
-import { FilterBar, SearchInput, CategoryDropdown, TagDropdown, TrackerDropdown } from './FilterBar'
+import { FilterBar, SearchInput, CategoryDropdown, TagDropdown, TrackerDropdown, ColumnSelector } from './FilterBar'
 import { AddTorrentModal } from './AddTorrentModal'
 import { TorrentDetailsPanel } from './TorrentDetailsPanel'
 import { ContextMenu } from './ContextMenu'
@@ -11,7 +11,7 @@ import { loadRatioThreshold, saveRatioThreshold } from '../utils/ratioThresholds
 
 const DEFAULT_PANEL_HEIGHT = 220
 
-type SortKey = 'name' | 'progress' | 'downloaded' | 'uploaded' | 'dlspeed' | 'upspeed' | 'ratio' | 'seeding_time' | 'added_on'
+type SortKey = 'name' | 'size' | 'progress' | 'downloaded' | 'uploaded' | 'dlspeed' | 'upspeed' | 'ratio' | 'eta' | 'state' | 'category' | 'tags' | 'num_seeds' | 'num_leechs' | 'last_activity' | 'save_path' | 'tracker' | 'seeding_time' | 'added_on' | 'completion_on'
 
 function SortIcon({ active, asc }: { active: boolean; asc: boolean }) {
 	return (
@@ -73,6 +73,39 @@ export function TorrentList() {
 	const [ratioThreshold, setRatioThreshold] = useState(loadRatioThreshold)
 	const [ratioPopupAnchor, setRatioPopupAnchor] = useState<HTMLElement | null>(null)
 
+	const [visibleColumns, setVisibleColumns] = useState<Set<string>>(() => {
+		const stored = localStorage.getItem('visibleColumns')
+		if (stored) return new Set(JSON.parse(stored))
+		return new Set(['progress', 'status', 'downloaded', 'uploaded', 'dlspeed', 'upspeed', 'ratio', 'seeding_time', 'added_on'])
+	})
+
+	const AVAILABLE_COLUMNS = [
+		{ id: 'progress', label: 'Progress' },
+		{ id: 'status', label: 'Status' },
+		{ id: 'size', label: 'Size' },
+		{ id: 'eta', label: 'ETA' },
+		{ id: 'downloaded', label: 'Down' },
+		{ id: 'uploaded', label: 'Up' },
+		{ id: 'dlspeed', label: 'DL Speed' },
+		{ id: 'upspeed', label: 'UP Speed' },
+		{ id: 'ratio', label: 'Ratio' },
+		{ id: 'seeding_time', label: 'Time' },
+		{ id: 'added_on', label: 'Added' },
+		{ id: 'completion_on', label: 'Completed' },
+		{ id: 'category', label: 'Category' },
+		{ id: 'tags', label: 'Tags' },
+		{ id: 'num_seeds', label: 'Seeds' },
+		{ id: 'num_leechs', label: 'Peers' },
+		{ id: 'last_activity', label: 'Last Active' },
+		{ id: 'save_path', label: 'Save Path' },
+		{ id: 'tracker', label: 'Tracker' },
+	]
+
+	function handleColumnChange(next: Set<string>) {
+		setVisibleColumns(next)
+		localStorage.setItem('visibleColumns', JSON.stringify([...next]))
+	}
+
 	const { data: categories = {} } = useCategories()
 	const { data: tags = [] } = useTags()
 	const { data: torrents = [], isLoading } = useTorrents({
@@ -107,8 +140,16 @@ export function TorrentList() {
 		}
 		result = [...result].sort((a, b) => {
 			const mul = sortAsc ? 1 : -1
-			if (sortKey === 'name') return mul * a.name.localeCompare(b.name)
-			return mul * (a[sortKey] - b[sortKey])
+			const valA = a[sortKey]
+			const valB = b[sortKey]
+
+			if (typeof valA === 'string' && typeof valB === 'string') {
+				return mul * valA.localeCompare(valB)
+			}
+			if (typeof valA === 'number' && typeof valB === 'number') {
+				return mul * (valA - valB)
+			}
+			return 0
 		})
 		return result
 	}, [torrents, tagFilter, trackerFilter, search, sortKey, sortAsc])
@@ -250,6 +291,16 @@ export function TorrentList() {
 					<TrackerDropdown value={trackerFilter} onChange={setTrackerFilter} trackers={uniqueTrackers} />
 				</div>
 
+				<div className="w-px h-6" style={{ backgroundColor: 'var(--border)' }} />
+
+				<div className="flex items-center gap-0.5 p-1 rounded-lg border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}>
+					<ColumnSelector
+						columns={AVAILABLE_COLUMNS}
+						visible={visibleColumns}
+						onChange={handleColumnChange}
+					/>
+				</div>
+
 				<div className="flex-1" />
 
 				<SearchInput value={search} onChange={setSearch} />
@@ -282,103 +333,241 @@ export function TorrentList() {
 										<SortIcon active={sortKey === 'name'} asc={sortAsc} />
 									</button>
 								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('progress')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Progress
-										<SortIcon active={sortKey === 'progress'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Status</span>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('downloaded')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Down
-										<SortIcon active={sortKey === 'downloaded'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('uploaded')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Up
-										<SortIcon active={sortKey === 'uploaded'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('dlspeed')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										<span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' }} />
-										Speed
-										<SortIcon active={sortKey === 'dlspeed'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('upspeed')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										<span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--warning) 40%, transparent)' }} />
-										Speed
-										<SortIcon active={sortKey === 'upspeed'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<div className="flex items-center gap-1">
+								{visibleColumns.has('progress') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
 										<button
-											onClick={() => handleSort('ratio')}
+											onClick={() => handleSort('progress')}
 											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
 											style={{ color: 'var(--text-muted)' }}
 										>
-											Ratio
-											<SortIcon active={sortKey === 'ratio'} asc={sortAsc} />
+											Progress
+											<SortIcon active={sortKey === 'progress'} asc={sortAsc} />
 										</button>
+									</th>
+								)}
+								{visibleColumns.has('status') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Status</span>
+									</th>
+								)}
+								{visibleColumns.has('size') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
 										<button
-											onClick={(e) => setRatioPopupAnchor(e.currentTarget)}
-											className="p-0.5 rounded opacity-50 hover:opacity-100 transition-opacity"
-											title="Configure ratio colors"
+											onClick={() => handleSort('size')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
 										>
-											<svg className="w-3 h-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-												<path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-												<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-											</svg>
+											Size
+											<SortIcon active={sortKey === 'size'} asc={sortAsc} />
 										</button>
-									</div>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('seeding_time')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Seed Time
-										<SortIcon active={sortKey === 'seeding_time'} asc={sortAsc} />
-									</button>
-								</th>
-								<th className="px-3 py-2.5 text-left whitespace-nowrap">
-									<button
-										onClick={() => handleSort('added_on')}
-										className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
-										style={{ color: 'var(--text-muted)' }}
-									>
-										Added
-										<SortIcon active={sortKey === 'added_on'} asc={sortAsc} />
-									</button>
-								</th>
+									</th>
+								)}
+								{visibleColumns.has('eta') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('eta')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											ETA
+											<SortIcon active={sortKey === 'eta'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('downloaded') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('downloaded')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Down
+											<SortIcon active={sortKey === 'downloaded'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('uploaded') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('uploaded')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Up
+											<SortIcon active={sortKey === 'uploaded'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('dlspeed') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('dlspeed')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											<span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' }} />
+											Speed
+											<SortIcon active={sortKey === 'dlspeed'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('upspeed') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('upspeed')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											<span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--warning) 40%, transparent)' }} />
+											Speed
+											<SortIcon active={sortKey === 'upspeed'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('ratio') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<div className="flex items-center gap-1">
+											<button
+												onClick={() => handleSort('ratio')}
+												className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+												style={{ color: 'var(--text-muted)' }}
+											>
+												Ratio
+												<SortIcon active={sortKey === 'ratio'} asc={sortAsc} />
+											</button>
+											<button
+												onClick={(e) => setRatioPopupAnchor(e.currentTarget)}
+												className="p-0.5 rounded opacity-50 hover:opacity-100 transition-opacity"
+												title="Configure ratio colors"
+											>
+												<svg className="w-3 h-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+													<path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+													<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+												</svg>
+											</button>
+										</div>
+									</th>
+								)}
+								{visibleColumns.has('seeding_time') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('seeding_time')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Seed Time
+											<SortIcon active={sortKey === 'seeding_time'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('added_on') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('added_on')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Added
+											<SortIcon active={sortKey === 'added_on'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('completion_on') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('completion_on')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Completed
+											<SortIcon active={sortKey === 'completion_on'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('category') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('category')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Category
+											<SortIcon active={sortKey === 'category'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('tags') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('tags')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Tags
+											<SortIcon active={sortKey === 'tags'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('num_seeds') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('num_seeds')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Seeds
+											<SortIcon active={sortKey === 'num_seeds'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('num_leechs') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('num_leechs')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Peers
+											<SortIcon active={sortKey === 'num_leechs'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('last_activity') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('last_activity')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Last Active
+											<SortIcon active={sortKey === 'last_activity'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('save_path') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('save_path')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Save Path
+											<SortIcon active={sortKey === 'save_path'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
+								{visibleColumns.has('tracker') && (
+									<th className="px-3 py-2.5 text-left whitespace-nowrap">
+										<button
+											onClick={() => handleSort('tracker')}
+											className="flex items-center gap-2 text-[9px] font-medium uppercase tracking-widest transition-colors"
+											style={{ color: 'var(--text-muted)' }}
+										>
+											Tracker
+											<SortIcon active={sortKey === 'tracker'} asc={sortAsc} />
+										</button>
+									</th>
+								)}
 							</tr>
 						</thead>
 						<tbody>
@@ -390,6 +579,7 @@ export function TorrentList() {
 									onSelect={handleSelect}
 									onContextMenu={(e) => handleContextMenu(e, t)}
 									ratioThreshold={ratioThreshold}
+									visibleColumns={visibleColumns}
 								/>
 							))}
 						</tbody>
