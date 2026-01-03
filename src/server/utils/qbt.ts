@@ -2,13 +2,14 @@ import { decrypt } from './crypto'
 
 interface QbtInstance {
 	url: string
-	qbt_username: string
-	qbt_password_encrypted: string
+	qbt_username: string | null
+	qbt_password_encrypted: string | null
+	skip_auth: number
 }
 
 export type QbtLoginResult = {
 	success: true
-	cookie: string
+	cookie: string | null
 	version?: string
 } | {
 	success: false
@@ -17,6 +18,14 @@ export type QbtLoginResult = {
 }
 
 export async function loginToQbt(instance: QbtInstance): Promise<QbtLoginResult> {
+	if (instance.skip_auth) {
+		return { success: true, cookie: null }
+	}
+
+	if (!instance.qbt_username || !instance.qbt_password_encrypted) {
+		return { success: false, error: 'Credentials required' }
+	}
+
 	try {
 		const password = decrypt(instance.qbt_password_encrypted)
 		const res = await fetch(`${instance.url}/api/v2/auth/login`, {
@@ -48,34 +57,42 @@ export async function loginToQbt(instance: QbtInstance): Promise<QbtLoginResult>
 	}
 }
 
-export async function testQbtConnection(url: string, username: string, password: string): Promise<QbtLoginResult> {
+export async function testQbtConnection(url: string, username?: string, password?: string, skipAuth?: boolean): Promise<QbtLoginResult> {
 	try {
-		const loginRes = await fetch(`${url}/api/v2/auth/login`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: new URLSearchParams({ username, password }),
-		})
+		let cookie: string | null = null
 
-		if (!loginRes.ok) {
-			return { success: false, error: `Login failed: HTTP ${loginRes.status}`, status: loginRes.status }
-		}
+		if (!skipAuth) {
+			if (!username || !password) {
+				return { success: false, error: 'Credentials required' }
+			}
 
-		const loginText = await loginRes.text()
-		if (loginText !== 'Ok.') {
-			return { success: false, error: 'Invalid credentials', status: 401 }
-		}
+			const loginRes = await fetch(`${url}/api/v2/auth/login`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams({ username, password }),
+			})
 
-		const cookie = loginRes.headers.get('set-cookie')?.split(';')[0]
-		if (!cookie) {
-			return { success: false, error: 'No session cookie received' }
+			if (!loginRes.ok) {
+				return { success: false, error: `Login failed: HTTP ${loginRes.status}`, status: loginRes.status }
+			}
+
+			const loginText = await loginRes.text()
+			if (loginText !== 'Ok.') {
+				return { success: false, error: 'Invalid credentials', status: 401 }
+			}
+
+			cookie = loginRes.headers.get('set-cookie')?.split(';')[0] || null
+			if (!cookie) {
+				return { success: false, error: 'No session cookie received' }
+			}
 		}
 
 		const versionRes = await fetch(`${url}/api/v2/app/version`, {
-			headers: { Cookie: cookie },
+			headers: cookie ? { Cookie: cookie } : {},
 		})
 
 		if (!versionRes.ok) {
-			return { success: false, error: 'Failed to get version' }
+			return { success: false, error: skipAuth ? 'Connection failed - is IP bypass enabled?' : 'Failed to get version' }
 		}
 
 		const version = await versionRes.text()
@@ -93,11 +110,11 @@ export async function testStoredQbtInstance(instance: QbtInstance): Promise<QbtL
 
 	try {
 		const versionRes = await fetch(`${instance.url}/api/v2/app/version`, {
-			headers: { Cookie: loginResult.cookie },
+			headers: loginResult.cookie ? { Cookie: loginResult.cookie } : {},
 		})
 
 		if (!versionRes.ok) {
-			return { success: false, error: 'Failed to get version' }
+			return { success: false, error: instance.skip_auth ? 'Connection failed - is IP bypass enabled?' : 'Failed to get version' }
 		}
 
 		const version = await versionRes.text()

@@ -59,7 +59,6 @@ auth.post('/register', async (c) => {
 
 	setCookie(c, 'session', sessionId, {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === 'production',
 		sameSite: 'Lax',
 		maxAge: SESSION_DURATION,
 		path: '/',
@@ -97,7 +96,6 @@ auth.post('/login', async (c) => {
 
 	setCookie(c, 'session', sessionId, {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === 'production',
 		sameSite: 'Lax',
 		maxAge: SESSION_DURATION,
 		path: '/',

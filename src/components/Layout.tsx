@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react'
 import { StatusBar } from './StatusBar'
 import { ThemeSwitcher } from './ThemeSwitcher'
-import { useUpdateCheck } from '../hooks/useUpdateCheck'
-
-declare const __APP_VERSION__: string
 
 interface Props {
 	children: ReactNode
@@ -12,7 +9,6 @@ interface Props {
 }
 
 export function Layout({ children, instanceLabel, onBackToInstances }: Props) {
-	const { hasUpdate, latestVersion } = useUpdateCheck()
 
 	return (
 		<div className="flex flex-col h-screen scanlines" style={{ backgroundColor: 'var(--bg-primary)' }}>
@@ -44,22 +40,6 @@ export function Layout({ children, instanceLabel, onBackToInstances }: Props) {
 				</div>
 				<div className="relative flex items-center gap-3">
 					<ThemeSwitcher />
-					<div
-						className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono"
-						style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-						title={hasUpdate ? `Update available: v${latestVersion}` : 'Up to date'}
-					>
-						v{__APP_VERSION__}
-						{hasUpdate ? (
-							<svg className="w-3.5 h-3.5" style={{ color: 'var(--warning)' }} fill="currentColor" viewBox="0 0 24 24">
-								<path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z" />
-							</svg>
-						) : (
-							<svg className="w-3.5 h-3.5" style={{ color: '#a6e3a1' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-							</svg>
-						)}
-					</div>
 				</div>
 			</header>
 			<main className="flex-1 overflow-hidden flex flex-col">{children}</main>

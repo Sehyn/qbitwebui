@@ -2,15 +2,17 @@ export interface Instance {
 	id: number
 	label: string
 	url: string
-	qbt_username: string
+	qbt_username: string | null
+	skip_auth: boolean
 	created_at: number
 }
 
 export interface CreateInstanceData {
 	label: string
 	url: string
-	qbt_username: string
-	qbt_password: string
+	qbt_username?: string
+	qbt_password?: string
+	skip_auth?: boolean
 }
 
 export interface UpdateInstanceData {
@@ -18,6 +20,7 @@ export interface UpdateInstanceData {
 	url?: string
 	qbt_username?: string
 	qbt_password?: string
+	skip_auth?: boolean
 }
 
 export async function getInstances(): Promise<Instance[]> {

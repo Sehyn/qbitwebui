@@ -224,8 +224,8 @@ integrations.post('/:id/grab', async (c) => {
 		return c.json({ error: 'Instance ID is required' }, 400)
 	}
 
-	const instance = db.query<{ id: number; url: string; qbt_username: string; qbt_password_encrypted: string }, [number, number]>(
-		'SELECT id, url, qbt_username, qbt_password_encrypted FROM instances WHERE id = ? AND user_id = ?'
+	const instance = db.query<{ id: number; url: string; qbt_username: string | null; qbt_password_encrypted: string | null; skip_auth: number }, [number, number]>(
+		'SELECT id, url, qbt_username, qbt_password_encrypted, skip_auth FROM instances WHERE id = ? AND user_id = ?'
 	).get(body.instanceId, user.id)
 
 	if (!instance) {
@@ -256,9 +256,11 @@ integrations.post('/:id/grab', async (c) => {
 			return c.json({ error: 'No download URL available' }, 400)
 		}
 
+		const addHeaders: Record<string, string> = {}
+		if (loginResult.cookie) addHeaders.Cookie = loginResult.cookie
 		const addRes = await fetch(`${instance.url}/api/v2/torrents/add`, {
 			method: 'POST',
-			headers: { Cookie: loginResult.cookie },
+			headers: addHeaders,
 			body: formData,
 		})
 

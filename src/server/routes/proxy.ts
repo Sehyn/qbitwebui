@@ -8,15 +8,15 @@ const proxy = new Hono()
 proxy.use('*', authMiddleware)
 
 interface QbtSession {
-	cookie: string
+	cookie: string | null
 	expires: number
 }
 
 const qbtSessions = new Map<number, QbtSession>()
-const loginInProgress = new Map<number, Promise<string>>()
+const loginInProgress = new Map<number, Promise<string | null>>()
 const SESSION_TTL = 30 * 60 * 1000
 
-async function loginToQbt(instance: Instance): Promise<string> {
+async function loginToQbt(instance: Instance): Promise<string | null> {
 	const existingLogin = loginInProgress.get(instance.id)
 	if (existingLogin) {
 		return existingLogin
@@ -39,7 +39,10 @@ async function loginToQbt(instance: Instance): Promise<string> {
 	}
 }
 
-async function getQbtSession(instance: Instance): Promise<string> {
+async function getQbtSession(instance: Instance): Promise<string | null> {
+	if (instance.skip_auth) {
+		return null
+	}
 	const cached = qbtSessions.get(instance.id)
 	if (cached && cached.expires > Date.now()) {
 		return cached.cookie
@@ -72,9 +75,11 @@ proxy.all('/:id/qbt/*', async (c) => {
 	const queryString = c.req.url.includes('?') ? c.req.url.slice(c.req.url.indexOf('?')) : ''
 	const targetUrl = `${instance.url}/api${path}${queryString}`
 
-	const makeRequest = async (cookie: string) => {
+	const makeRequest = async (cookie: string | null) => {
 		const headers = new Headers()
-		headers.set('Cookie', cookie)
+		if (cookie) {
+			headers.set('Cookie', cookie)
+		}
 
 		const contentType = c.req.header('content-type') || ''
 		let body: string | FormData | ArrayBuffer | undefined
@@ -105,7 +110,7 @@ proxy.all('/:id/qbt/*', async (c) => {
 		let cookie = await getQbtSession(instance)
 		let res = await makeRequest(cookie)
 
-		if (res.status === 401 || res.status === 403) {
+		if (!instance.skip_auth && (res.status === 401 || res.status === 403)) {
 			clearQbtSession(instance.id)
 			cookie = await loginToQbt(instance)
 			res = await makeRequest(cookie)

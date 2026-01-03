@@ -3,6 +3,9 @@ import { getInstances, createInstance, updateInstance, deleteInstance, type Inst
 import { logout, changePassword } from '../api/auth'
 import { ThemeSwitcher } from './ThemeSwitcher'
 import { SearchPanel } from './SearchPanel'
+import { useUpdateCheck } from '../hooks/useUpdateCheck'
+
+declare const __APP_VERSION__: string
 
 type Tab = 'dashboard' | 'indexers'
 
@@ -52,7 +55,7 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 	const [loading, setLoading] = useState(true)
 	const [showForm, setShowForm] = useState(false)
 	const [editingId, setEditingId] = useState<number | null>(null)
-	const [formData, setFormData] = useState<CreateInstanceData>({ label: '', url: '', qbt_username: '', qbt_password: '' })
+	const [formData, setFormData] = useState<CreateInstanceData>({ label: '', url: '', qbt_username: '', qbt_password: '', skip_auth: false })
 	const [error, setError] = useState('')
 	const [submitting, setSubmitting] = useState(false)
 	const [deleteConfirm, setDeleteConfirm] = useState<Instance | null>(null)
@@ -65,6 +68,7 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 	const [changingPassword, setChangingPassword] = useState(false)
 	const [dlHistory, setDlHistory] = useState<number[]>([])
 	const [upHistory, setUpHistory] = useState<number[]>([])
+	const { hasUpdate, latestVersion } = useUpdateCheck()
 
 	const loadInstances = useCallback(async () => {
 		try {
@@ -121,7 +125,7 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 			}
 			setShowForm(false)
 			setEditingId(null)
-			setFormData({ label: '', url: '', qbt_username: '', qbt_password: '' })
+			setFormData({ label: '', url: '', qbt_username: '', qbt_password: '', skip_auth: false })
 			setTestResult(null)
 			await loadInstances()
 		} catch (err) {
@@ -147,7 +151,7 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 		setTestResult(null)
 		try {
 			let res: Response
-			if (editingId && !formData.qbt_password) {
+			if (editingId && !formData.qbt_password && !formData.skip_auth) {
 				res = await fetch(`/api/instances/${editingId}/test`, {
 					method: 'POST',
 					credentials: 'include',
@@ -161,6 +165,7 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 						url: formData.url,
 						username: formData.qbt_username,
 						password: formData.qbt_password,
+						skip_auth: formData.skip_auth,
 					}),
 				})
 			}
@@ -182,8 +187,9 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 		setFormData({
 			label: instance.label,
 			url: instance.url,
-			qbt_username: instance.qbt_username,
+			qbt_username: instance.qbt_username || '',
 			qbt_password: '',
+			skip_auth: instance.skip_auth,
 		})
 		setTestResult(null)
 		setShowForm(true)
@@ -267,6 +273,22 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 				</div>
 				<div className="flex items-center gap-3">
 					<ThemeSwitcher />
+					<div
+						className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono"
+						style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+						title={hasUpdate ? `Update available: v${latestVersion}` : 'Up to date'}
+					>
+						v{__APP_VERSION__}
+						{hasUpdate ? (
+							<svg className="w-3.5 h-3.5" style={{ color: 'var(--warning)' }} fill="currentColor" viewBox="0 0 24 24">
+								<path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z" />
+							</svg>
+						) : (
+							<svg className="w-3.5 h-3.5" style={{ color: '#a6e3a1' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+							</svg>
+						)}
+					</div>
 					<div className="relative">
 						<button
 							onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -376,7 +398,7 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 					<h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Instances</h1>
 					{!showForm && (
 						<button
-							onClick={() => { setShowForm(true); setEditingId(null); setFormData({ label: '', url: '', qbt_username: '', qbt_password: '' }) }}
+							onClick={() => { setShowForm(true); setEditingId(null); setFormData({ label: '', url: '', qbt_username: '', qbt_password: '', skip_auth: false }) }}
 							className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
 							style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
 						>
@@ -429,9 +451,10 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 										value={formData.qbt_username}
 										onChange={(e) => setFormData({ ...formData, qbt_username: e.target.value })}
 										className="w-full px-4 py-2.5 rounded-lg border text-sm"
-										style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+										style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)', opacity: formData.skip_auth ? 0.5 : 1 }}
 										placeholder="admin"
-										required
+										required={!formData.skip_auth}
+										disabled={formData.skip_auth}
 									/>
 								</div>
 								<div>
@@ -443,12 +466,25 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 										value={formData.qbt_password}
 										onChange={(e) => setFormData({ ...formData, qbt_password: e.target.value })}
 										className="w-full px-4 py-2.5 rounded-lg border text-sm"
-										style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+										style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)', opacity: formData.skip_auth ? 0.5 : 1 }}
 										placeholder={editingId ? '••••••••  (unchanged)' : '••••••••'}
-										required={!editingId}
+										required={!formData.skip_auth && !editingId}
+										disabled={formData.skip_auth}
 									/>
 								</div>
 							</div>
+
+							<label className="flex items-center gap-3 cursor-pointer">
+								<input
+									type="checkbox"
+									checked={formData.skip_auth}
+									onChange={(e) => setFormData({ ...formData, skip_auth: e.target.checked })}
+									className="w-4 h-4 rounded"
+								/>
+								<span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+									Skip authentication (enable if qBittorrent has IP bypass enabled)
+								</span>
+							</label>
 
 							{testResult && (
 								<div
@@ -476,11 +512,11 @@ export function InstanceManager({ username, onSelectInstance, onLogout }: Props)
 								<button
 									type="button"
 									onClick={testConnection}
-									disabled={testing || !formData.url || !formData.qbt_username || (!editingId && !formData.qbt_password)}
+									disabled={testing || !formData.url || (!formData.skip_auth && (!formData.qbt_username || (!editingId && !formData.qbt_password)))}
 									className="px-4 py-2 rounded-lg text-sm border disabled:opacity-50"
 									style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
 								>
-									{testing ? 'Testing...' : editingId && !formData.qbt_password ? 'Test Saved' : 'Test Connection'}
+									{testing ? 'Testing...' : editingId && !formData.qbt_password && !formData.skip_auth ? 'Test Saved' : 'Test Connection'}
 								</button>
 								<button
 									type="button"

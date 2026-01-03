@@ -59,11 +59,13 @@ export default function App() {
 	if (view === 'instances' || !currentInstance) {
 		return (
 			<ThemeProvider>
-				<InstanceManager
-					username={user?.username || ''}
-					onSelectInstance={(instance) => { setCurrentInstance(instance); setView('torrents') }}
-					onLogout={() => { setUser(null); setCurrentInstance(null); setView('auth') }}
-				/>
+				<QueryClientProvider client={queryClient}>
+					<InstanceManager
+						username={user?.username || ''}
+						onSelectInstance={(instance) => { setCurrentInstance(instance); setView('torrents') }}
+						onLogout={() => { setUser(null); setCurrentInstance(null); setView('auth') }}
+					/>
+				</QueryClientProvider>
 			</ThemeProvider>
 		)
 	}

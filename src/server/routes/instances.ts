@@ -14,7 +14,8 @@ interface InstanceResponse {
 	id: number
 	label: string
 	url: string
-	qbt_username: string
+	qbt_username: string | null
+	skip_auth: boolean
 	created_at: number
 }
 
@@ -24,6 +25,7 @@ function toResponse(i: Instance): InstanceResponse {
 		label: i.label,
 		url: i.url,
 		qbt_username: i.qbt_username,
+		skip_auth: !!i.skip_auth,
 		created_at: i.created_at,
 	}
 }
@@ -78,9 +80,11 @@ async function fetchInstanceStats(instance: Instance): Promise<InstanceStats> {
 			return base
 		}
 
+		const headers: Record<string, string> = {}
+		if (loginResult.cookie) headers.Cookie = loginResult.cookie
 		const [torrentsRes, transferRes] = await Promise.all([
-			fetch(`${instance.url}/api/v2/torrents/info`, { headers: { Cookie: loginResult.cookie } }),
-			fetch(`${instance.url}/api/v2/transfer/info`, { headers: { Cookie: loginResult.cookie } }),
+			fetch(`${instance.url}/api/v2/torrents/info`, { headers }),
+			fetch(`${instance.url}/api/v2/transfer/info`, { headers }),
 		])
 
 		if (!torrentsRes.ok || !transferRes.ok) {
@@ -128,12 +132,17 @@ instances.post('/', async (c) => {
 	const body = await c.req.json<{
 		label: string
 		url: string
-		qbt_username: string
-		qbt_password: string
+		qbt_username?: string
+		qbt_password?: string
+		skip_auth?: boolean
 	}>()
 
-	if (!body.label || !body.url || !body.qbt_username || !body.qbt_password) {
+	if (!body.label || !body.url) {
 		return c.json({ error: 'Missing required fields' }, 400)
+	}
+
+	if (!body.skip_auth && (!body.qbt_username || !body.qbt_password)) {
+		return c.json({ error: 'Credentials required when skip_auth is disabled' }, 400)
 	}
 
 	try {
@@ -142,13 +151,13 @@ instances.post('/', async (c) => {
 		return c.json({ error: e instanceof Error ? e.message : 'Invalid URL' }, 400)
 	}
 
-	const encrypted = encrypt(body.qbt_password)
+	const encrypted = body.qbt_password ? encrypt(body.qbt_password) : null
 
 	try {
 		const result = db.run(
-			`INSERT INTO instances (user_id, label, url, qbt_username, qbt_password_encrypted)
-			 VALUES (?, ?, ?, ?, ?)`,
-			[user.id, body.label, body.url, body.qbt_username, encrypted]
+			`INSERT INTO instances (user_id, label, url, qbt_username, qbt_password_encrypted, skip_auth)
+			 VALUES (?, ?, ?, ?, ?, ?)`,
+			[user.id, body.label, body.url, body.qbt_username || null, encrypted, body.skip_auth ? 1 : 0]
 		)
 
 		const instance = db.query<Instance, [number]>(
@@ -176,6 +185,7 @@ instances.put('/:id', async (c) => {
 		url?: string
 		qbt_username?: string
 		qbt_password?: string
+		skip_auth?: boolean
 	}>()
 
 	const existing = db.query<Instance, [number, number]>(
@@ -209,6 +219,10 @@ instances.put('/:id', async (c) => {
 	if (body.qbt_password !== undefined) {
 		updates.push('qbt_password_encrypted = ?')
 		values.push(encrypt(body.qbt_password))
+	}
+	if (body.skip_auth !== undefined) {
+		updates.push('skip_auth = ?')
+		values.push(body.skip_auth ? 1 : 0)
 	}
 
 	if (updates.length > 0) {
@@ -251,12 +265,17 @@ instances.post('/:id/test', async (c) => {
 instances.post('/test', async (c) => {
 	const body = await c.req.json<{
 		url: string
-		username: string
-		password: string
+		username?: string
+		password?: string
+		skip_auth?: boolean
 	}>()
 
-	if (!body.url || !body.username || !body.password) {
-		return c.json({ error: 'Missing required fields' }, 400)
+	if (!body.url) {
+		return c.json({ error: 'URL is required' }, 400)
+	}
+
+	if (!body.skip_auth && (!body.username || !body.password)) {
+		return c.json({ error: 'Credentials required when skip_auth is disabled' }, 400)
 	}
 
 	try {
@@ -265,7 +284,7 @@ instances.post('/test', async (c) => {
 		return c.json({ error: e instanceof Error ? e.message : 'Invalid URL' }, 400)
 	}
 
-	const result = await testQbtConnection(body.url, body.username, body.password)
+	const result = await testQbtConnection(body.url, body.username, body.password, body.skip_auth)
 	if (!result.success) {
 		const status = result.error === 'Invalid credentials' ? 401 : 400
 		return c.json({ error: result.error }, status)

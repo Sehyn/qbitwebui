@@ -26,12 +26,36 @@ db.exec(`
 		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
 		url TEXT NOT NULL,
-		qbt_username TEXT NOT NULL,
-		qbt_password_encrypted TEXT NOT NULL,
+		qbt_username TEXT,
+		qbt_password_encrypted TEXT,
+		skip_auth INTEGER DEFAULT 0,
 		created_at INTEGER DEFAULT (unixepoch()),
 		UNIQUE(user_id, label)
 	)
 `)
+
+const instanceCols = db.query<{ name: string; notnull: number }, []>(`PRAGMA table_info(instances)`).all()
+const hasSkipAuth = instanceCols.some(c => c.name === 'skip_auth')
+const usernameNotNull = instanceCols.find(c => c.name === 'qbt_username')?.notnull
+
+if (!hasSkipAuth || usernameNotNull) {
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS instances_new (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			label TEXT NOT NULL,
+			url TEXT NOT NULL,
+			qbt_username TEXT,
+			qbt_password_encrypted TEXT,
+			skip_auth INTEGER DEFAULT 0,
+			created_at INTEGER DEFAULT (unixepoch()),
+			UNIQUE(user_id, label)
+		)
+	`)
+	db.exec(`INSERT INTO instances_new SELECT id, user_id, label, url, qbt_username, qbt_password_encrypted, 0, created_at FROM instances`)
+	db.exec(`DROP TABLE instances`)
+	db.exec(`ALTER TABLE instances_new RENAME TO instances`)
+}
 
 db.exec(`
 	CREATE TABLE IF NOT EXISTS sessions (
@@ -66,8 +90,9 @@ export interface Instance {
 	user_id: number
 	label: string
 	url: string
-	qbt_username: string
-	qbt_password_encrypted: string
+	qbt_username: string | null
+	qbt_password_encrypted: string | null
+	skip_auth: number
 	created_at: number
 }
 
