@@ -244,7 +244,12 @@ integrations.post('/:id/grab', async (c) => {
 			formData.append('urls', body.magnetUrl)
 		} else if (body.downloadUrl) {
 			const apiKey = decrypt(integration.api_key_encrypted)
-			const torrentRes = await fetch(body.downloadUrl, {
+			const prowlarrHost = new URL(integration.url).host
+			const isAlreadyProxied = body.downloadUrl.includes(prowlarrHost)
+			const fetchUrl = isAlreadyProxied
+				? body.downloadUrl
+				: `${integration.url}/api/v1/indexer/${body.indexerId}/download?link=${encodeURIComponent(body.downloadUrl)}`
+			const torrentRes = await fetch(fetchUrl, {
 				headers: { 'X-Api-Key': apiKey },
 			})
 			if (!torrentRes.ok) {

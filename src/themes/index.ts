@@ -32,7 +32,7 @@ export const themes: Theme[] = [
 			accentContrast: '#070a09',
 			warning: '#f7b731',
 			error: '#f43f5e',
-			border: '#ffffff12',
+			border: '#32323e',
 			progress: '#00d4aa',
 		},
 	},
