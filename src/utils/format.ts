@@ -79,3 +79,7 @@ export function formatRelativeDate(timestamp: number): string {
 	if (diffDays < 7) return `${diffDays}d ago`
 	return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
+
+export function normalizeSearch(str: string): string {
+	return str.toLowerCase().replace(/[._-]+/g, ' ')
+}

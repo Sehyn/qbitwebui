@@ -8,6 +8,7 @@ import { TorrentDetailsPanel } from './TorrentDetailsPanel'
 import { ContextMenu } from './ContextMenu'
 import { RatioThresholdPopup } from './RatioThresholdPopup'
 import { loadRatioThreshold, saveRatioThreshold } from '../utils/ratioThresholds'
+import { normalizeSearch } from '../utils/format'
 import { COLUMNS, DEFAULT_VISIBLE_COLUMNS, DEFAULT_COLUMN_ORDER, type SortKey } from './columns'
 import { usePagination } from '../hooks/usePagination'
 
@@ -135,8 +136,8 @@ export function TorrentList() {
 			result = result.filter((t) => t.tracker === trackerFilter)
 		}
 		if (search) {
-			const q = search.toLowerCase()
-			result = result.filter((t) => t.name.toLowerCase().includes(q))
+			const q = normalizeSearch(search)
+			result = result.filter((t) => normalizeSearch(t.name).includes(q))
 		}
 		result = [...result].sort((a, b) => {
 			const mul = sortAsc ? 1 : -1

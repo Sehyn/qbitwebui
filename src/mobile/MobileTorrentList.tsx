@@ -3,7 +3,7 @@ import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as api from '../api/qbittorrent'
 import type { Instance } from '../api/instances'
 import type { Torrent, TorrentState } from '../types/qbittorrent'
-import { formatSize, formatSpeed, formatDuration, formatEta, formatCompactSpeed, formatCompactSize, formatRelativeDate } from '../utils/format'
+import { formatSize, formatSpeed, formatDuration, formatEta, formatCompactSpeed, formatCompactSize, formatRelativeDate, normalizeSearch } from '../utils/format'
 
 type TorrentWithInstance = Torrent & { instanceId: number; instanceLabel: string }
 
@@ -68,10 +68,11 @@ function StateIcon({ type, color }: { type: 'download' | 'upload' | 'pause' | 'e
 
 interface Props {
 	instances: Instance[]
+	search?: string
 	onSelectTorrent: (hash: string, instanceId: number) => void
 }
 
-export function MobileTorrentList({ instances, onSelectTorrent }: Props) {
+export function MobileTorrentList({ instances, search, onSelectTorrent }: Props) {
 	const [filter, setFilter] = useState<FilterTab>('all')
 	const [swipedHash, setSwipedHash] = useState<string | null>(null)
 	const queryClient = useQueryClient()
@@ -109,17 +110,22 @@ export function MobileTorrentList({ instances, onSelectTorrent }: Props) {
 	})
 
 	const filteredTorrents = useMemo(() => {
+		let result = torrents
+		if (search) {
+			const q = normalizeSearch(search)
+			result = result.filter(t => normalizeSearch(t.name).includes(q))
+		}
 		switch (filter) {
 			case 'downloading':
-				return torrents.filter(t => DOWNLOADING_STATES.includes(t.state))
+				return result.filter(t => DOWNLOADING_STATES.includes(t.state))
 			case 'seeding':
-				return torrents.filter(t => SEEDING_STATES.includes(t.state))
+				return result.filter(t => SEEDING_STATES.includes(t.state))
 			case 'paused':
-				return torrents.filter(t => PAUSED_STATES.includes(t.state))
+				return result.filter(t => PAUSED_STATES.includes(t.state))
 			default:
-				return torrents
+				return result
 		}
-	}, [torrents, filter])
+	}, [torrents, filter, search])
 
 	const tabs: { id: FilterTab; label: string }[] = [
 		{ id: 'all', label: 'All' },

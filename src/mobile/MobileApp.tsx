@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { getInstances, type Instance } from '../api/instances'
 import { logout } from '../api/auth'
@@ -28,6 +28,9 @@ export function MobileApp({ username, onLogout }: Props) {
 	const [selectedTorrentHash, setSelectedTorrentHash] = useState<string | null>(null)
 	const [selectedTorrentInstanceId, setSelectedTorrentInstanceId] = useState<number | null>(null)
 	const [showUserMenu, setShowUserMenu] = useState(false)
+	const [search, setSearch] = useState('')
+	const [searchFocused, setSearchFocused] = useState(false)
+	const searchInputRef = useRef<HTMLInputElement>(null)
 
 	const loadInstances = useCallback(async () => {
 		try {
@@ -89,13 +92,13 @@ export function MobileApp({ username, onLogout }: Props) {
 		<QueryClientProvider client={queryClient}>
 			<div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>
 				<header
-					className="sticky top-0 z-40 px-4 py-3 border-b backdrop-blur-xl"
+					className="sticky top-0 z-40 border-b backdrop-blur-xl"
 					style={{
 						backgroundColor: 'color-mix(in srgb, var(--bg-primary) 85%, transparent)',
 						borderColor: 'var(--border)',
 					}}
 				>
-					<div className="flex items-center justify-between">
+					<div className="flex items-center justify-between px-4 py-3">
 						<div className="flex items-center gap-3">
 							<img src="/logo.png" alt="qbitwebui" className="w-8 h-8" />
 							<MobileInstancePicker
@@ -139,6 +142,51 @@ export function MobileApp({ username, onLogout }: Props) {
 							)}
 						</div>
 					</div>
+					<div className="px-4 pb-3">
+						<div
+							className="flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-200"
+							style={{
+								backgroundColor: 'var(--bg-tertiary)',
+								borderColor: searchFocused ? 'var(--accent)' : 'var(--border)',
+							}}
+						>
+							<svg
+								className="w-4 h-4 flex-shrink-0"
+								style={{ color: searchFocused ? 'var(--accent)' : 'var(--text-muted)' }}
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+							</svg>
+							<input
+								ref={searchInputRef}
+								type="text"
+								inputMode="search"
+								enterKeyHint="search"
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+								onFocus={() => setSearchFocused(true)}
+								onBlur={() => setSearchFocused(false)}
+								placeholder="Search torrents..."
+								className="flex-1 bg-transparent outline-none"
+								style={{ color: 'var(--text-primary)', fontSize: '16px' }}
+							/>
+							{search && (
+								<button
+									onMouseDown={(e) => e.preventDefault()}
+									onClick={() => { setSearch(''); searchInputRef.current?.focus() }}
+									className="p-1 rounded-full active:scale-90 transition-transform"
+									style={{ backgroundColor: 'var(--bg-tertiary)' }}
+								>
+									<svg className="w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+									</svg>
+								</button>
+							)}
+						</div>
+					</div>
 				</header>
 
 				<main className="flex-1 overflow-y-auto">
@@ -148,6 +196,7 @@ export function MobileApp({ username, onLogout }: Props) {
 						/>
 						<MobileTorrentList
 							instances={selectedInstance === 'all' ? instances : [selectedInstance]}
+							search={search}
 							onSelectTorrent={(hash, instanceId) => {
 								setSelectedTorrentHash(hash)
 								setSelectedTorrentInstanceId(instanceId)
@@ -166,6 +215,7 @@ export function MobileApp({ username, onLogout }: Props) {
 						}}
 					/>
 				)}
+
 			</div>
 		</QueryClientProvider>
 	)
