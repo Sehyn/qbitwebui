@@ -10,6 +10,7 @@ Built with [React](https://react.dev/), [Hono](https://hono.dev/), and [Bun](htt
 [![GitHub stars](https://img.shields.io/github/stars/Maciejonos/qbitwebui?style=for-the-badge&labelColor=101418&color=9ccbfb)](https://github.com/Maciejonos/qbitwebui/stargazers)
 [![GitHub License](https://img.shields.io/github/license/Maciejonos/qbitwebui?style=for-the-badge&labelColor=101418&color=abedd5)](https://github.com/Maciejonos/qbitwebui/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/Maciejonos/qbitwebui?style=for-the-badge&labelColor=101418&color=b9c8da)](https://github.com/Maciejonos/qbitwebui/releases)
+[![Docker Build](https://img.shields.io/github/actions/workflow/status/Maciejonos/qbitwebui/docker.yml?style=for-the-badge&labelColor=101418&color=4EB329&label=build)](https://github.com/Maciejonos/qbitwebui/actions)
 </div>
 
 <div align="center">
