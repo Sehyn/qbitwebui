@@ -1,4 +1,4 @@
-<div align="center"> 
+<div align="center">
  <img width="200" height="200" alt="logo" src="https://github.com/user-attachments/assets/431cf92d-d8e6-4be7-a5b6-642ed6ab9898" />
 
 ### A modern web interface for managing multiple qBittorrent instances
@@ -63,6 +63,8 @@ services:
     environment:
       # Generate your own: openssl rand -hex 32
       - ENCRYPTION_KEY=your-secret-key-here
+      # Uncomment to disable login (single-user mode)
+      # - DISABLE_AUTH=true
       # Uncomment to allow HTTPS with self-signed certificates
       # - ALLOW_SELF_SIGNED_CERTS=true
     volumes:
@@ -94,6 +96,7 @@ bun run dev
 | `DATABASE_PATH` | No | `./data/qbitwebui.db` | SQLite database location |
 | `SALT_PATH` | No | `./data/.salt` | Encryption salt file location |
 | `ALLOW_SELF_SIGNED_CERTS` | No | `false` | Set to `true` to allow HTTPS connections to qBittorrent instances with self-signed certificates |
+| `DISABLE_AUTH` | No | `false` | Set to `true` to disable login/registration |
 
 ## Tech Stack
 
@@ -104,4 +107,5 @@ React 19, TypeScript, Tailwind CSS v4, Vite, TanStack Query, Hono, SQLite, Bun
 [![Star History Chart](https://api.star-history.com/svg?repos=Maciejonos/qbitwebui&type=date&legend=top-left)](https://www.star-history.com/#Maciejonos/qbitwebui&type=date&legend=top-left)
 
 ## License
+
 MIT

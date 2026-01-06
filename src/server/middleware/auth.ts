@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory'
 import { getCookie } from 'hono/cookie'
-import { db, type User } from '../db'
+import { db, type User, AUTH_DISABLED } from '../db'
 
 export interface AuthUser {
 	id: number
@@ -14,6 +14,11 @@ declare module 'hono' {
 }
 
 export const authMiddleware = createMiddleware(async (c, next) => {
+	if (AUTH_DISABLED) {
+		c.set('user', { id: 1, username: 'guest' })
+		return next()
+	}
+
 	const sessionId = getCookie(c, 'session')
 	if (!sessionId) {
 		return c.json({ error: 'Unauthorized' }, 401)

@@ -113,3 +113,12 @@ function cleanupExpiredSessions() {
 
 cleanupExpiredSessions()
 setInterval(cleanupExpiredSessions, 60 * 60 * 1000)
+
+export const AUTH_DISABLED = process.env.DISABLE_AUTH === 'true'
+
+if (AUTH_DISABLED) {
+	const guest = db.query<{ id: number }, []>('SELECT id FROM users WHERE id = 1').get()
+	if (!guest) {
+		db.run('INSERT INTO users (id, username, password_hash) VALUES (1, ?, ?)', ['guest', 'disabled'])
+	}
+}

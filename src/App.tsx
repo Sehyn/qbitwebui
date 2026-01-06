@@ -31,16 +31,23 @@ export default function App() {
 	const [currentInstance, setCurrentInstance] = useState<Instance | null>(null)
 
 	useEffect(() => {
-		getMe()
-			.then((u) => {
-				if (u) {
-					setUser(u)
-					setView(isMobile() ? 'mobile' : 'instances')
-				} else {
-					setView('auth')
-				}
-			})
-			.catch(() => setView('auth'))
+		fetch('/api/config').then(r => r.json()).then(({ authDisabled }) => {
+			if (authDisabled) {
+				setUser({ id: 1, username: 'guest' })
+				setView(isMobile() ? 'mobile' : 'instances')
+				return
+			}
+			getMe()
+				.then((u) => {
+					if (u) {
+						setUser(u)
+						setView(isMobile() ? 'mobile' : 'instances')
+					} else {
+						setView('auth')
+					}
+				})
+				.catch(() => setView('auth'))
+		}).catch(() => setView('auth'))
 	}, [])
 
 	useEffect(() => {

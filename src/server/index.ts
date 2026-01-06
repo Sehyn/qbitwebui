@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
 import { cors } from 'hono/cors'
+import { AUTH_DISABLED } from './db'
 import auth from './routes/auth'
 import instances from './routes/instances'
 import proxy from './routes/proxy'
@@ -20,6 +21,8 @@ app.use('*', cors({
 	origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
 	credentials: true,
 }))
+
+app.get('/api/config', (c) => c.json({ authDisabled: AUTH_DISABLED }))
 
 app.route('/api/auth', auth)
 app.route('/api/instances', instances)
