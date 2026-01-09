@@ -108,6 +108,24 @@ export const themes: Theme[] = [
 			progress: '#b8bb26',
 		},
 	},
+	{
+		id: 'everforest',
+		name: 'Everforest',
+		colors: {
+			bgPrimary: '#272E33',
+			bgSecondary: '#1E2326',
+			bgTertiary: '#2E383C',
+			textPrimary: '#D3C6AA',
+			textSecondary: '#9DA9A0',
+			textMuted: '#7A8478',
+			accent: '#A7C080',
+			accentContrast: '#272E33',
+			warning: '#DBBC7F',
+			error: '#E67E80',
+			border: '#414B50',
+			progress: '#83C092',
+		},
+	},
 ]
 
 export function getThemeById(id: string): Theme {
