@@ -32,13 +32,13 @@ export function useTorrentPeers(hash: string | null) {
 	})
 }
 
-export function useTorrentFiles(hash: string | null) {
+export function useTorrentFiles(hash: string | null, isActive: boolean = true) {
 	const instance = useInstance()
 	return useQuery({
 		queryKey: ['torrent-files', instance.id, hash],
 		queryFn: () => api.getTorrentFiles(instance.id, hash!),
 		enabled: !!hash,
-		refetchInterval: 5000,
+		refetchInterval: isActive ? 5000 : false,
 	})
 }
 

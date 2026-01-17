@@ -582,20 +582,52 @@ const PRIORITY_OPTIONS = [
 	{ value: 7, label: 'Max', color: 'var(--accent)' },
 ];
 
-function ContentTab({ hash }: { hash: string }) {
-	const { data: files, isLoading } = useTorrentFiles(hash);
+// Store expanded state per hash for persistence when switching torrents (module-level cache)
+const expandedByHash = new Map<string, Set<string>>();
+const initializedHashes = new Set<string>();
+
+function ContentTab({ hash, isActive }: { hash: string; isActive: boolean }) {
+	const { data: files, isLoading } = useTorrentFiles(hash, isActive);
 	const setPriorityMutation = useSetFilePriority();
-	const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
-	const [treeInitialized, setTreeInitialized] = useState(false);
+	const prevHashRef = useRef<string | null>(null);
 
 	const tree = useMemo(() => (files ? buildFileTree(files) : []), [files]);
 
-	useEffect(() => {
-		if (tree.length > 0 && !treeInitialized) {
-			setExpanded(getInitialExpanded(tree));
-			setTreeInitialized(true);
+	// Initialize expanded state: restore from cache or derive from tree
+	const [expanded, setExpanded] = useState<Set<string>>(() => {
+		const cached = expandedByHash.get(hash);
+		if (cached) return cached;
+		return new Set<string>();
+	});
+
+	// Handle hash changes - save current state and restore/init for new hash
+	if (prevHashRef.current !== hash) {
+		// Save current expanded state for the previous hash
+		if (prevHashRef.current !== null) {
+			expandedByHash.set(prevHashRef.current, expanded);
 		}
-	}, [tree, treeInitialized]);
+		prevHashRef.current = hash;
+
+		// Restore cached state or reset for new hash
+		const cached = expandedByHash.get(hash);
+		if (cached && cached.size > 0) {
+			if (expanded !== cached) {
+				setExpanded(cached);
+			}
+		} else if (expanded.size > 0) {
+			setExpanded(new Set<string>());
+		}
+	}
+
+	// Derive initial expanded state when tree first becomes available for this hash
+	if (tree.length > 0 && !initializedHashes.has(hash) && expanded.size === 0) {
+		initializedHashes.add(hash);
+		const initialExpanded = getInitialExpanded(tree);
+		if (initialExpanded.size > 0) {
+			setExpanded(initialExpanded);
+			expandedByHash.set(hash, initialExpanded);
+		}
+	}
 
 	const flatNodes = useMemo(
 		() => flattenVisibleNodes(tree, expanded),
@@ -607,6 +639,8 @@ function ContentTab({ hash }: { hash: string }) {
 			const next = new Set(prev);
 			if (next.has(path)) next.delete(path);
 			else next.add(path);
+			// Update cache
+			expandedByHash.set(hash, next);
 			return next;
 		});
 	}
@@ -1050,7 +1084,7 @@ export function TorrentDetailsPanel({
 							{tab === 'trackers' && <TrackersTab hash={hash} />}
 							{tab === 'peers' && <PeersTab hash={hash} />}
 							{tab === 'http' && <HttpSourcesTab hash={hash} />}
-							{tab === 'content' && <ContentTab hash={hash} />}
+							{tab === 'content' && <ContentTab hash={hash} isActive={tab === 'content'} />}
 						</>
 					) : (
 						<div className="flex items-center justify-center h-full">
