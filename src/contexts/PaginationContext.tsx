@@ -18,15 +18,17 @@ export function PaginationProvider({ children }: { children: ReactNode }) {
 	}
 
 	return (
-		<PaginationContext.Provider value={{
-			page,
-			perPage,
-			totalItems,
-			setPage,
-			setPerPage: handleSetPerPage,
-			setTotalItems,
-			totalPages,
-		}}>
+		<PaginationContext.Provider
+			value={{
+				page,
+				perPage,
+				totalItems,
+				setPage,
+				setPerPage: handleSetPerPage,
+				setTotalItems,
+				totalPages,
+			}}
+		>
 			{children}
 		</PaginationContext.Provider>
 	)

@@ -26,7 +26,7 @@ export function buildFileTree(files: TorrentFile[]): FileTreeNode[] {
 			const isFile = j === parts.length - 1
 			currentPath = currentPath ? `${currentPath}/${part}` : part
 
-			let existing = currentLevel.find(n => n.name === part)
+			let existing = currentLevel.find((n) => n.name === part)
 
 			if (!existing) {
 				const newNode: FileTreeNode = {
@@ -84,7 +84,7 @@ function calculateFolderStats(nodes: FileTreeNode[], files: TorrentFile[]): void
 			node.progress = totalSize > 0 ? downloadedSize / totalSize : 0
 			node.availability = node.fileIndices.length > 0 ? totalAvailability / node.fileIndices.length : 0
 
-			const priorities = new Set(node.fileIndices.map(idx => files[idx].priority))
+			const priorities = new Set(node.fileIndices.map((idx) => files[idx].priority))
 			if (priorities.size === 1) {
 				node.priority = getPriorityLabel([...priorities][0])
 			} else {
@@ -123,7 +123,7 @@ export function getInitialExpanded(nodes: FileTreeNode[]): Set<string> {
 	const expanded = new Set<string>()
 
 	function expandSingleChildPath(children: FileTreeNode[]) {
-		const folders = children.filter(n => n.isFolder)
+		const folders = children.filter((n) => n.isFolder)
 		if (folders.length === 1) {
 			expanded.add(folders[0].path)
 			expandSingleChildPath(folders[0].children)

@@ -36,8 +36,8 @@ db.exec(`
 `)
 
 const instanceCols = db.query<{ name: string; notnull: number }, []>(`PRAGMA table_info(instances)`).all()
-const hasSkipAuth = instanceCols.some(c => c.name === 'skip_auth')
-const usernameNotNull = instanceCols.find(c => c.name === 'qbt_username')?.notnull
+const hasSkipAuth = instanceCols.some((c) => c.name === 'skip_auth')
+const usernameNotNull = instanceCols.find((c) => c.name === 'qbt_username')?.notnull
 
 if (!hasSkipAuth || usernameNotNull) {
 	db.exec(`
@@ -53,7 +53,9 @@ if (!hasSkipAuth || usernameNotNull) {
 			UNIQUE(user_id, label)
 		)
 	`)
-	db.exec(`INSERT INTO instances_new SELECT id, user_id, label, url, qbt_username, qbt_password_encrypted, 0, created_at FROM instances`)
+	db.exec(
+		`INSERT INTO instances_new SELECT id, user_id, label, url, qbt_username, qbt_password_encrypted, 0, created_at FROM instances`
+	)
 	db.exec(`DROP TABLE instances`)
 	db.exec(`ALTER TABLE instances_new RENAME TO instances`)
 }
@@ -140,7 +142,10 @@ function generateSecurePassword(): string {
 	for (let i = 3; i < 16; i++) {
 		password += all[bytes[i] % all.length]
 	}
-	return password.split('').sort(() => randomBytes(1)[0] - 128).join('')
+	return password
+		.split('')
+		.sort(() => randomBytes(1)[0] - 128)
+		.join('')
 }
 
 async function initDefaultAdmin() {

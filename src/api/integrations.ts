@@ -63,7 +63,10 @@ export async function deleteIntegration(id: number): Promise<void> {
 	if (!res.ok) throw new Error('Failed to delete integration')
 }
 
-export async function testIntegrationConnection(url: string, apiKey: string): Promise<{ success: boolean; version?: string; error?: string }> {
+export async function testIntegrationConnection(
+	url: string,
+	apiKey: string
+): Promise<{ success: boolean; version?: string; error?: string }> {
 	const res = await fetch('/api/integrations/test', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },

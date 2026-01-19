@@ -1,4 +1,12 @@
-export function Checkbox({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+export function Checkbox({
+	checked,
+	onChange,
+	label,
+}: {
+	checked: boolean
+	onChange: (v: boolean) => void
+	label: string
+}) {
 	return (
 		<button type="button" onClick={() => onChange(!checked)} className="flex items-center gap-2 text-left">
 			<div
@@ -9,12 +17,23 @@ export function Checkbox({ checked, onChange, label }: { checked: boolean; onCha
 				}}
 			>
 				{checked && (
-					<svg className="w-2.5 h-2.5" style={{ color: 'white' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+					<svg
+						className="w-2.5 h-2.5"
+						style={{ color: 'white' }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={3}
+					>
 						<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 					</svg>
 				)}
 			</div>
-			{label && <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{label}</span>}
+			{label && (
+				<span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+					{label}
+				</span>
+			)}
 		</button>
 	)
 }

@@ -61,7 +61,7 @@ export function useSetFilePriority() {
 			const previous = queryClient.getQueryData(['torrent-files', instance.id, hash])
 			queryClient.setQueryData(['torrent-files', instance.id, hash], (old: unknown) => {
 				if (!Array.isArray(old)) return old
-				return old.map((file, idx) => ids.includes(idx) ? { ...file, priority } : file)
+				return old.map((file, idx) => (ids.includes(idx) ? { ...file, priority } : file))
 			})
 			return { previous, hash }
 		},
@@ -78,8 +78,7 @@ export function useAddTrackers() {
 	const instance = useInstance()
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: ({ hash, urls }: { hash: string; urls: string[] }) =>
-			api.addTrackers(instance.id, hash, urls),
+		mutationFn: ({ hash, urls }: { hash: string; urls: string[] }) => api.addTrackers(instance.id, hash, urls),
 		onSuccess: (_, { hash }) => queryClient.invalidateQueries({ queryKey: ['torrent-trackers', instance.id, hash] }),
 	})
 }
@@ -88,8 +87,7 @@ export function useRemoveTrackers() {
 	const instance = useInstance()
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: ({ hash, urls }: { hash: string; urls: string[] }) =>
-			api.removeTrackers(instance.id, hash, urls),
+		mutationFn: ({ hash, urls }: { hash: string; urls: string[] }) => api.removeTrackers(instance.id, hash, urls),
 		onSuccess: (_, { hash }) => queryClient.invalidateQueries({ queryKey: ['torrent-trackers', instance.id, hash] }),
 	})
 }

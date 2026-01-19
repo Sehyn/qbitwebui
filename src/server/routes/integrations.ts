@@ -30,9 +30,9 @@ function toResponse(i: Integration): IntegrationResponse {
 
 integrations.get('/', (c) => {
 	const user = c.get('user')
-	const list = db.query<Integration, [number]>(
-		'SELECT * FROM integrations WHERE user_id = ? ORDER BY created_at'
-	).all(user.id)
+	const list = db
+		.query<Integration, [number]>('SELECT * FROM integrations WHERE user_id = ? ORDER BY created_at')
+		.all(user.id)
 	return c.json(list.map(toResponse))
 })
 
@@ -68,9 +68,9 @@ integrations.post('/', async (c) => {
 			[user.id, body.type, body.label, body.url, encrypted]
 		)
 
-		const integration = db.query<Integration, [number]>(
-			'SELECT * FROM integrations WHERE id = ?'
-		).get(Number(result.lastInsertRowid))
+		const integration = db
+			.query<Integration, [number]>('SELECT * FROM integrations WHERE id = ?')
+			.get(Number(result.lastInsertRowid))
 
 		if (!integration) {
 			return c.json({ error: 'Failed to create integration' }, 500)
@@ -89,9 +89,9 @@ integrations.delete('/:id', (c) => {
 	const user = c.get('user')
 	const id = Number(c.req.param('id'))
 
-	const existing = db.query<Integration, [number, number]>(
-		'SELECT * FROM integrations WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const existing = db
+		.query<Integration, [number, number]>('SELECT * FROM integrations WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!existing) {
 		return c.json({ error: 'Integration not found' }, 404)
@@ -123,7 +123,7 @@ integrations.post('/test', async (c) => {
 			return c.json({ error: `Connection failed: HTTP ${res.status}` }, 400)
 		}
 
-		const data = await res.json() as { version: string }
+		const data = (await res.json()) as { version: string }
 		return c.json({ success: true, version: data.version })
 	} catch (e) {
 		log.error(`Prowlarr test failed: ${e instanceof Error ? e.message : 'Unknown error'}`)
@@ -135,9 +135,9 @@ integrations.get('/:id/indexers', async (c) => {
 	const user = c.get('user')
 	const id = Number(c.req.param('id'))
 
-	const integration = db.query<Integration, [number, number]>(
-		'SELECT * FROM integrations WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const integration = db
+		.query<Integration, [number, number]>('SELECT * FROM integrations WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!integration) {
 		return c.json({ error: 'Integration not found' }, 404)
@@ -165,9 +165,9 @@ integrations.get('/:id/search', async (c) => {
 	const user = c.get('user')
 	const id = Number(c.req.param('id'))
 
-	const integration = db.query<Integration, [number, number]>(
-		'SELECT * FROM integrations WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const integration = db
+		.query<Integration, [number, number]>('SELECT * FROM integrations WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!integration) {
 		return c.json({ error: 'Integration not found' }, 404)
@@ -208,9 +208,9 @@ integrations.post('/:id/grab', async (c) => {
 	const user = c.get('user')
 	const id = Number(c.req.param('id'))
 
-	const integration = db.query<Integration, [number, number]>(
-		'SELECT * FROM integrations WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const integration = db
+		.query<Integration, [number, number]>('SELECT * FROM integrations WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!integration) {
 		return c.json({ error: 'Integration not found' }, 404)
@@ -228,9 +228,18 @@ integrations.post('/:id/grab', async (c) => {
 		return c.json({ error: 'Instance ID is required' }, 400)
 	}
 
-	const instance = db.query<{ id: number; url: string; qbt_username: string | null; qbt_password_encrypted: string | null; skip_auth: number }, [number, number]>(
-		'SELECT id, url, qbt_username, qbt_password_encrypted, skip_auth FROM instances WHERE id = ? AND user_id = ?'
-	).get(body.instanceId, user.id)
+	const instance = db
+		.query<
+			{
+				id: number
+				url: string
+				qbt_username: string | null
+				qbt_password_encrypted: string | null
+				skip_auth: number
+			},
+			[number, number]
+		>('SELECT id, url, qbt_username, qbt_password_encrypted, skip_auth FROM instances WHERE id = ? AND user_id = ?')
+		.get(body.instanceId, user.id)
 
 	if (!instance) {
 		return c.json({ error: 'qBittorrent instance not found' }, 404)

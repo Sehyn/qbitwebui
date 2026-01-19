@@ -55,7 +55,9 @@ export function RatioThresholdPopup({ anchor, threshold, onSave, onClose }: Prop
 			</div>
 			<div className="flex items-center justify-center gap-2 mb-3">
 				<span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#a6e3a1' }} />
-				<span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>≥</span>
+				<span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+					≥
+				</span>
 				<input
 					type="text"
 					inputMode="decimal"
@@ -64,7 +66,9 @@ export function RatioThresholdPopup({ anchor, threshold, onSave, onClose }: Prop
 					className="w-16 px-2 py-1.5 rounded text-xs font-mono border outline-none text-center"
 					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
 				/>
-				<span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>&lt;</span>
+				<span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+					&lt;
+				</span>
 				<span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#f38ba8' }} />
 			</div>
 			<button

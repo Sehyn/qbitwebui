@@ -9,11 +9,18 @@ interface Props {
 }
 
 export function Layout({ children, instanceLabel, onLogoClick }: Props) {
-
 	return (
 		<div className="flex flex-col h-screen scanlines" style={{ backgroundColor: 'var(--bg-primary)' }}>
-			<header className="relative z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-secondary) 80%, transparent)' }}>
-				<div className="absolute inset-0" style={{ background: 'linear-gradient(to right, color-mix(in srgb, var(--accent) 2%, transparent), transparent)' }} />
+			<header
+				className="relative z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md"
+				style={{ backgroundColor: 'color-mix(in srgb, var(--bg-secondary) 80%, transparent)' }}
+			>
+				<div
+					className="absolute inset-0"
+					style={{
+						background: 'linear-gradient(to right, color-mix(in srgb, var(--accent) 2%, transparent), transparent)',
+					}}
+				/>
 				<div className="relative flex items-center gap-3">
 					<button
 						onClick={onLogoClick}

@@ -91,7 +91,7 @@ export interface AddTorrentOptions {
 export async function addTorrent(instanceId: number, options: AddTorrentOptions, files?: File[]): Promise<void> {
 	const formData = new FormData()
 	if (files) {
-		files.forEach(file => formData.append('torrents', file))
+		files.forEach((file) => formData.append('torrents', file))
 	}
 	if (options.urls) {
 		formData.append('urls', options.urls)
@@ -226,7 +226,12 @@ export async function removeCategories(instanceId: number, categories: string[])
 	})
 }
 
-export async function setFilePriority(instanceId: number, hash: string, ids: number[], priority: number): Promise<void> {
+export async function setFilePriority(
+	instanceId: number,
+	hash: string,
+	ids: number[],
+	priority: number
+): Promise<void> {
 	await request(instanceId, '/torrents/filePrio', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

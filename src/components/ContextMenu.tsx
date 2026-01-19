@@ -1,5 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
-import { useCategories, useTags, useStartTorrents, useStopTorrents, useDeleteTorrents, useSetCategory, useAddTags, useRemoveTags, useRenameTorrent, useExportTorrents } from '../hooks/useTorrents'
+import {
+	useCategories,
+	useTags,
+	useStartTorrents,
+	useStopTorrents,
+	useDeleteTorrents,
+	useSetCategory,
+	useAddTags,
+	useRemoveTags,
+	useRenameTorrent,
+	useExportTorrents,
+} from '../hooks/useTorrents'
 import type { Torrent } from '../types/qbittorrent'
 
 interface Props {
@@ -29,9 +40,14 @@ export function ContextMenu({ x, y, torrents, onClose }: Props) {
 	const deleteMutation = useDeleteTorrents()
 	const exportMutation = useExportTorrents()
 
-	const hashes = torrents.map(t => t.hash)
+	const hashes = torrents.map((t) => t.hash)
 	const isSingle = torrents.length === 1
-	const currentTags = isSingle ? torrents[0].tags.split(',').map(t => t.trim()).filter(Boolean) : []
+	const currentTags = isSingle
+		? torrents[0].tags
+				.split(',')
+				.map((t) => t.trim())
+				.filter(Boolean)
+		: []
 
 	useEffect(() => {
 		function handleClickOutside(e: MouseEvent) {
@@ -107,26 +123,43 @@ export function ContextMenu({ x, y, torrents, onClose }: Props) {
 	}
 
 	function handleExport() {
-		exportMutation.mutate(torrents.map(t => ({ hash: t.hash, name: t.name })))
+		exportMutation.mutate(torrents.map((t) => ({ hash: t.hash, name: t.name })))
 		onClose()
 	}
 
 	if (renaming && isSingle) {
 		return (
 			<div ref={ref} className="rounded-lg border shadow-xl z-[200] p-3" style={menuStyle}>
-				<div className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Rename torrent</div>
+				<div className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
+					Rename torrent
+				</div>
 				<input
 					ref={inputRef}
 					type="text"
 					value={newName}
 					onChange={(e) => setNewName(e.target.value)}
-					onKeyDown={(e) => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') onClose() }}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') handleRename()
+						if (e.key === 'Escape') onClose()
+					}}
 					className="w-full px-3 py-2 rounded-lg border text-sm mb-2"
 					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
 				/>
 				<div className="flex gap-2">
-					<button onClick={onClose} className="flex-1 py-1.5 rounded-lg text-xs" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>Cancel</button>
-					<button onClick={handleRename} className="flex-1 py-1.5 rounded-lg text-xs" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}>Rename</button>
+					<button
+						onClick={onClose}
+						className="flex-1 py-1.5 rounded-lg text-xs"
+						style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}
+					>
+						Cancel
+					</button>
+					<button
+						onClick={handleRename}
+						className="flex-1 py-1.5 rounded-lg text-xs"
+						style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
+					>
+						Rename
+					</button>
 				</div>
 			</div>
 		)
@@ -142,9 +175,13 @@ export function ContextMenu({ x, y, torrents, onClose }: Props) {
 			</MenuItem>
 			{submenu === 'category' && (
 				<div className="pl-2">
-					<MenuItem onClick={() => handleSetCategory('')} small>None</MenuItem>
-					{Object.keys(categories).map(cat => (
-						<MenuItem key={cat} onClick={() => handleSetCategory(cat)} small>{cat}</MenuItem>
+					<MenuItem onClick={() => handleSetCategory('')} small>
+						None
+					</MenuItem>
+					{Object.keys(categories).map((cat) => (
+						<MenuItem key={cat} onClick={() => handleSetCategory(cat)} small>
+							{cat}
+						</MenuItem>
 					))}
 				</div>
 			)}
@@ -154,10 +191,14 @@ export function ContextMenu({ x, y, torrents, onClose }: Props) {
 			{submenu === 'addTag' && (
 				<div className="pl-2">
 					{tags.length === 0 ? (
-						<div className="px-3 py-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>No tags</div>
+						<div className="px-3 py-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+							No tags
+						</div>
 					) : (
-						tags.map(tag => (
-							<MenuItem key={tag} onClick={() => handleAddTag(tag)} small>{tag}</MenuItem>
+						tags.map((tag) => (
+							<MenuItem key={tag} onClick={() => handleAddTag(tag)} small>
+								{tag}
+							</MenuItem>
 						))
 					)}
 				</div>
@@ -169,8 +210,10 @@ export function ContextMenu({ x, y, torrents, onClose }: Props) {
 					</MenuItem>
 					{submenu === 'removeTag' && (
 						<div className="pl-2">
-							{currentTags.map(tag => (
-								<MenuItem key={tag} onClick={() => handleRemoveTag(tag)} small>{tag}</MenuItem>
+							{currentTags.map((tag) => (
+								<MenuItem key={tag} onClick={() => handleRemoveTag(tag)} small>
+									{tag}
+								</MenuItem>
 							))}
 						</div>
 					)}
@@ -189,15 +232,24 @@ export function ContextMenu({ x, y, torrents, onClose }: Props) {
 			</MenuItem>
 			{submenu === 'delete' && (
 				<div className="pl-2">
-					<MenuItem onClick={() => handleDelete(false)} small>Keep files</MenuItem>
-					<MenuItem onClick={() => handleDelete(true)} small>Delete files</MenuItem>
+					<MenuItem onClick={() => handleDelete(false)} small>
+						Keep files
+					</MenuItem>
+					<MenuItem onClick={() => handleDelete(true)} small>
+						Delete files
+					</MenuItem>
 				</div>
 			)}
 		</div>
 	)
 }
 
-function MenuItem({ children, onClick, hasSubmenu, small }: {
+function MenuItem({
+	children,
+	onClick,
+	hasSubmenu,
+	small,
+}: {
 	children: React.ReactNode
 	onClick: () => void
 	hasSubmenu?: boolean
@@ -211,7 +263,14 @@ function MenuItem({ children, onClick, hasSubmenu, small }: {
 		>
 			<span>{children}</span>
 			{hasSubmenu && (
-				<svg className="w-3 h-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className="w-3 h-3"
+					style={{ color: 'var(--text-muted)' }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
 				</svg>
 			)}

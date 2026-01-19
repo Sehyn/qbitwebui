@@ -10,7 +10,7 @@ import { TorrentList } from './components/TorrentList'
 import { getMe, type User } from './api/auth'
 import type { Instance } from './api/instances'
 
-const MobileApp = lazy(() => import('./mobile/MobileApp').then(m => ({ default: m.MobileApp })))
+const MobileApp = lazy(() => import('./mobile/MobileApp').then((m) => ({ default: m.MobileApp })))
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -32,24 +32,27 @@ export default function App() {
 	const [authDisabled, setAuthDisabled] = useState(false)
 
 	useEffect(() => {
-		fetch('/api/config').then(r => r.json()).then(({ authDisabled }) => {
-			if (authDisabled) {
-				setAuthDisabled(true)
-				setUser({ id: 1, username: 'guest' })
-				setView(isMobile() ? 'mobile' : 'instances')
-				return
-			}
-			getMe()
-				.then((u) => {
-					if (u) {
-						setUser(u)
-						setView(isMobile() ? 'mobile' : 'instances')
-					} else {
-						setView('auth')
-					}
-				})
-				.catch(() => setView('auth'))
-		}).catch(() => setView('auth'))
+		fetch('/api/config')
+			.then((r) => r.json())
+			.then(({ authDisabled }) => {
+				if (authDisabled) {
+					setAuthDisabled(true)
+					setUser({ id: 1, username: 'guest' })
+					setView(isMobile() ? 'mobile' : 'instances')
+					return
+				}
+				getMe()
+					.then((u) => {
+						if (u) {
+							setUser(u)
+							setView(isMobile() ? 'mobile' : 'instances')
+						} else {
+							setView('auth')
+						}
+					})
+					.catch(() => setView('auth'))
+			})
+			.catch(() => setView('auth'))
 	}, [])
 
 	useEffect(() => {
@@ -79,7 +82,9 @@ export default function App() {
 		return (
 			<ThemeProvider>
 				<div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-					<div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>
+					<div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+						Loading...
+					</div>
 				</div>
 			</ThemeProvider>
 		)
@@ -88,7 +93,12 @@ export default function App() {
 	if (view === 'auth') {
 		return (
 			<ThemeProvider>
-				<AuthForm onSuccess={(u) => { setUser(u); setView(isMobile() ? 'mobile' : 'instances') }} />
+				<AuthForm
+					onSuccess={(u) => {
+						setUser(u)
+						setView(isMobile() ? 'mobile' : 'instances')
+					}}
+				/>
 			</ThemeProvider>
 		)
 	}
@@ -96,14 +106,24 @@ export default function App() {
 	if (view === 'mobile') {
 		return (
 			<ThemeProvider>
-				<Suspense fallback={
-					<div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-						<div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>
-					</div>
-				}>
+				<Suspense
+					fallback={
+						<div
+							className="min-h-screen flex items-center justify-center"
+							style={{ backgroundColor: 'var(--bg-primary)' }}
+						>
+							<div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+								Loading...
+							</div>
+						</div>
+					}
+				>
 					<MobileApp
 						username={user?.username || ''}
-						onLogout={() => { setUser(null); setView('auth') }}
+						onLogout={() => {
+							setUser(null)
+							setView('auth')
+						}}
 						authDisabled={authDisabled}
 					/>
 				</Suspense>
@@ -118,7 +138,11 @@ export default function App() {
 					<InstanceManager
 						username={user?.username || ''}
 						onSelectInstance={selectInstance}
-						onLogout={() => { setUser(null); setCurrentInstance(null); setView('auth') }}
+						onLogout={() => {
+							setUser(null)
+							setCurrentInstance(null)
+							setView('auth')
+						}}
 						authDisabled={authDisabled}
 					/>
 				</QueryClientProvider>
@@ -131,10 +155,7 @@ export default function App() {
 			<QueryClientProvider client={queryClient}>
 				<InstanceProvider instance={currentInstance}>
 					<PaginationProvider>
-						<Layout
-							instanceLabel={currentInstance.label}
-							onLogoClick={goBackToInstances}
-						>
+						<Layout instanceLabel={currentInstance.label} onLogoClick={goBackToInstances}>
 							<TorrentList />
 						</Layout>
 					</PaginationProvider>

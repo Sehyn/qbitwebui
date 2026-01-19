@@ -117,8 +117,8 @@ export function useRSSManager({ instances, onViewChange }: UseRSSManagerOptions)
 			if (!mountedRef.current) return
 			const flat = flattenFeeds(items)
 			setFeeds(flat)
-			setExpandedFolders(new Set(flat.filter(f => f.isFolder).map(f => f.path)))
-			setSelectedFeed(prev => prev ? flat.find(f => f.path === prev.path) || null : null)
+			setExpandedFolders(new Set(flat.filter((f) => f.isFolder).map((f) => f.path)))
+			setSelectedFeed((prev) => (prev ? flat.find((f) => f.path === prev.path) || null : null))
 		} catch (err) {
 			if (!mountedRef.current) return
 			setError(err instanceof Error ? err.message : 'Failed to load feeds')
@@ -194,25 +194,25 @@ export function useRSSManager({ instances, onViewChange }: UseRSSManagerOptions)
 			setShowAddFeed(false)
 			setFeedUrl('')
 			setFeedPath('')
-			await new Promise(r => setTimeout(r, FEED_REFRESH_DELAY))
+			await new Promise((r) => setTimeout(r, FEED_REFRESH_DELAY))
 			if (!mountedRef.current) return
 			const items = await getRSSItems(selectedInstance.id, true)
 			if (!mountedRef.current) return
 			const flat = flattenFeeds(items)
-			const newFeed = flat.find(f => !f.isFolder && f.url === url)
+			const newFeed = flat.find((f) => !f.isFolder && f.url === url)
 			if (newFeed) {
 				await refreshRSSItem(selectedInstance.id, newFeed.path)
-				await new Promise(r => setTimeout(r, FEED_REFRESH_DELAY))
+				await new Promise((r) => setTimeout(r, FEED_REFRESH_DELAY))
 				if (!mountedRef.current) return
 				const updatedItems = await getRSSItems(selectedInstance.id, true)
 				if (!mountedRef.current) return
 				const updatedFlat = flattenFeeds(updatedItems)
 				setFeeds(updatedFlat)
-				setExpandedFolders(new Set(updatedFlat.filter(f => f.isFolder).map(f => f.path)))
-				setSelectedFeed(updatedFlat.find(f => f.path === newFeed.path) || null)
+				setExpandedFolders(new Set(updatedFlat.filter((f) => f.isFolder).map((f) => f.path)))
+				setSelectedFeed(updatedFlat.find((f) => f.path === newFeed.path) || null)
 			} else {
 				setFeeds(flat)
-				setExpandedFolders(new Set(flat.filter(f => f.isFolder).map(f => f.path)))
+				setExpandedFolders(new Set(flat.filter((f) => f.isFolder).map((f) => f.path)))
 			}
 		} catch (err) {
 			if (!mountedRef.current) return
@@ -378,7 +378,7 @@ export function useRSSManager({ instances, onViewChange }: UseRSSManagerOptions)
 	}
 
 	function toggleFolder(path: string) {
-		setExpandedFolders(prev => {
+		setExpandedFolders((prev) => {
 			const next = new Set(prev)
 			if (next.has(path)) next.delete(path)
 			else next.add(path)
@@ -414,7 +414,7 @@ export function useRSSManager({ instances, onViewChange }: UseRSSManagerOptions)
 		setNewRuleName('')
 	}
 
-	const visibleFeeds = feeds.filter(f => {
+	const visibleFeeds = feeds.filter((f) => {
 		if (f.depth === 0) return true
 		const parts = f.path.split('\\')
 		for (let i = 1; i < parts.length; i++) {
@@ -424,7 +424,7 @@ export function useRSSManager({ instances, onViewChange }: UseRSSManagerOptions)
 		return true
 	})
 
-	const feedUrls = feeds.filter(f => !f.isFolder).map(f => f.url)
+	const feedUrls = feeds.filter((f) => !f.isFolder).map((f) => f.url)
 	const feedArticles = selectedFeed?.data?.articles || []
 
 	return {

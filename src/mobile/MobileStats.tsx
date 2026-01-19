@@ -9,7 +9,7 @@ interface Props {
 
 export function MobileStats({ instances }: Props) {
 	const torrentQueries = useQueries({
-		queries: instances.map(instance => ({
+		queries: instances.map((instance) => ({
 			queryKey: ['torrents', instance.id],
 			queryFn: () => api.getTorrents(instance.id),
 			refetchInterval: 2000,
@@ -17,7 +17,7 @@ export function MobileStats({ instances }: Props) {
 	})
 
 	const transferQueries = useQueries({
-		queries: instances.map(instance => ({
+		queries: instances.map((instance) => ({
 			queryKey: ['transfer', instance.id],
 			queryFn: () => api.getTransferInfo(instance.id),
 			refetchInterval: 2000,
@@ -25,14 +25,14 @@ export function MobileStats({ instances }: Props) {
 	})
 
 	const syncQueries = useQueries({
-		queries: instances.map(instance => ({
+		queries: instances.map((instance) => ({
 			queryKey: ['syncMaindata', instance.id],
 			queryFn: () => api.getSyncMaindata(instance.id),
 			refetchInterval: 2000,
 		})),
 	})
 
-	const torrents = torrentQueries.flatMap(q => q.data || [])
+	const torrents = torrentQueries.flatMap((q) => q.data || [])
 	const totalDownloadSpeed = transferQueries.reduce((sum, q) => sum + (q.data?.dl_info_speed || 0), 0)
 	const totalUploadSpeed = transferQueries.reduce((sum, q) => sum + (q.data?.up_info_speed || 0), 0)
 	const allTimeDownload = syncQueries.reduce((sum, q) => sum + (q.data?.server_state.alltime_dl || 0), 0)
@@ -40,9 +40,11 @@ export function MobileStats({ instances }: Props) {
 
 	const counts = {
 		total: torrents.length,
-		downloading: torrents.filter(t => ['downloading', 'metaDL', 'forcedDL', 'stalledDL', 'allocating'].includes(t.state)).length,
-		seeding: torrents.filter(t => ['uploading', 'forcedUP', 'stalledUP'].includes(t.state)).length,
-		paused: torrents.filter(t => ['pausedDL', 'pausedUP', 'stoppedDL', 'stoppedUP'].includes(t.state)).length,
+		downloading: torrents.filter((t) =>
+			['downloading', 'metaDL', 'forcedDL', 'stalledDL', 'allocating'].includes(t.state)
+		).length,
+		seeding: torrents.filter((t) => ['uploading', 'forcedUP', 'stalledUP'].includes(t.state)).length,
+		paused: torrents.filter((t) => ['pausedDL', 'pausedUP', 'stoppedDL', 'stoppedUP'].includes(t.state)).length,
 	}
 
 	return (
@@ -57,13 +59,25 @@ export function MobileStats({ instances }: Props) {
 							className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
 							style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 15%, transparent)' }}
 						>
-							<svg className="w-5 h-5" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<svg
+								className="w-5 h-5"
+								style={{ color: 'var(--accent)' }}
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
 							</svg>
 						</div>
 						<div className="min-w-0">
-							<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Download</div>
-							<div className="text-base font-semibold tabular-nums truncate" style={{ color: 'var(--text-primary)', minHeight: '1.5rem' }}>
+							<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+								Download
+							</div>
+							<div
+								className="text-base font-semibold tabular-nums truncate"
+								style={{ color: 'var(--text-primary)', minHeight: '1.5rem' }}
+							>
 								{formatSpeed(totalDownloadSpeed)}
 							</div>
 						</div>
@@ -79,13 +93,25 @@ export function MobileStats({ instances }: Props) {
 							className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
 							style={{ backgroundColor: 'color-mix(in srgb, #a6e3a1 15%, transparent)' }}
 						>
-							<svg className="w-5 h-5" style={{ color: '#a6e3a1' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<svg
+								className="w-5 h-5"
+								style={{ color: '#a6e3a1' }}
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
 							</svg>
 						</div>
 						<div className="min-w-0">
-							<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Upload</div>
-							<div className="text-base font-semibold tabular-nums truncate" style={{ color: 'var(--text-primary)', minHeight: '1.5rem' }}>
+							<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+								Upload
+							</div>
+							<div
+								className="text-base font-semibold tabular-nums truncate"
+								style={{ color: 'var(--text-primary)', minHeight: '1.5rem' }}
+							>
 								{formatSpeed(totalUploadSpeed)}
 							</div>
 						</div>
@@ -105,8 +131,12 @@ export function MobileStats({ instances }: Props) {
 						className="p-3 rounded-xl border text-center"
 						style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
 					>
-						<div className="text-xl font-bold tabular-nums" style={{ color: item.color }}>{item.value}</div>
-						<div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.label}</div>
+						<div className="text-xl font-bold tabular-nums" style={{ color: item.color }}>
+							{item.value}
+						</div>
+						<div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>
+							{item.label}
+						</div>
 					</div>
 				))}
 			</div>
@@ -116,7 +146,9 @@ export function MobileStats({ instances }: Props) {
 					className="p-3 rounded-xl border"
 					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
 				>
-					<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>All-Time Down</div>
+					<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+						All-Time Down
+					</div>
 					<div className="text-base font-semibold tabular-nums" style={{ color: 'var(--accent)' }}>
 						{formatSize(allTimeDownload)}
 					</div>
@@ -125,7 +157,9 @@ export function MobileStats({ instances }: Props) {
 					className="p-3 rounded-xl border"
 					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
 				>
-					<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>All-Time Up</div>
+					<div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+						All-Time Up
+					</div>
 					<div className="text-base font-semibold tabular-nums" style={{ color: '#a6e3a1' }}>
 						{formatSize(allTimeUpload)}
 					</div>

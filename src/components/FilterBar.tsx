@@ -7,32 +7,68 @@ const filters: { value: TorrentFilter; label: string; icon: ReactNode }[] = [
 	{
 		value: 'all',
 		label: 'All',
-		icon: <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />,
+		icon: (
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+			/>
+		),
 	},
 	{
 		value: 'downloading',
 		label: 'Downloading',
-		icon: <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />,
+		icon: (
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+			/>
+		),
 	},
 	{
 		value: 'seeding',
 		label: 'Seeding',
-		icon: <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />,
+		icon: (
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+			/>
+		),
 	},
 	{
 		value: 'completed',
 		label: 'Completed',
-		icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+		icon: (
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+			/>
+		),
 	},
 	{
 		value: 'stopped',
 		label: 'Stopped',
-		icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z" />,
+		icon: (
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"
+			/>
+		),
 	},
 	{
 		value: 'active',
 		label: 'Active',
-		icon: <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />,
+		icon: (
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+			/>
+		),
 	},
 ]
 
@@ -54,7 +90,13 @@ export function FilterBar({ filter, onFilterChange }: Props) {
 					}}
 				>
 					{filter === f.value && (
-						<div className="absolute inset-0 rounded-lg shadow-lg" style={{ background: 'linear-gradient(to right, var(--accent), color-mix(in srgb, var(--accent) 80%, black))', boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 20%, transparent)' }} />
+						<div
+							className="absolute inset-0 rounded-lg shadow-lg"
+							style={{
+								background: 'linear-gradient(to right, var(--accent), color-mix(in srgb, var(--accent) 80%, black))',
+								boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 20%, transparent)',
+							}}
+						/>
 					)}
 					<svg className="relative w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 						{f.icon}
@@ -69,8 +111,19 @@ export function FilterBar({ filter, onFilterChange }: Props) {
 export function SearchInput({ value, onChange }: { value: string; onChange: (s: string) => void }) {
 	return (
 		<div className="relative shrink min-w-0 w-64">
-			<svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-				<path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+			<svg
+				className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+				style={{ color: 'var(--text-muted)' }}
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+				strokeWidth={2}
+			>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+				/>
 			</svg>
 			<input
 				type="text"
@@ -120,7 +173,13 @@ function Dropdown<T extends string>({ value, onChange, options, placeholder, ico
 					{icon}
 				</svg>
 				<span className="max-w-[100px] truncate">{selected?.label ?? placeholder}</span>
-				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
@@ -130,7 +189,10 @@ function Dropdown<T extends string>({ value, onChange, options, placeholder, ico
 					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
 				>
 					<button
-						onClick={() => { onChange(null); setOpen(false) }}
+						onClick={() => {
+							onChange(null)
+							setOpen(false)
+						}}
 						className="w-full flex items-center justify-between px-3 py-2 text-xs text-left transition-colors"
 						style={{
 							color: !value ? 'var(--accent)' : 'var(--text-muted)',
@@ -142,15 +204,23 @@ function Dropdown<T extends string>({ value, onChange, options, placeholder, ico
 					{options.map((o) => (
 						<button
 							key={o.value}
-							onClick={() => { onChange(o.value); setOpen(false) }}
+							onClick={() => {
+								onChange(o.value)
+								setOpen(false)
+							}}
 							className="w-full flex items-center justify-between px-3 py-2 text-xs text-left transition-colors"
 							style={{
 								color: value === o.value ? 'var(--accent)' : 'var(--text-muted)',
-								backgroundColor: value === o.value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+								backgroundColor:
+									value === o.value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
 							}}
 						>
 							<span className="truncate">{o.label}</span>
-							{o.count !== undefined && <span style={{ color: 'var(--text-muted)' }} className="ml-2">{o.count}</span>}
+							{o.count !== undefined && (
+								<span style={{ color: 'var(--text-muted)' }} className="ml-2">
+									{o.count}
+								</span>
+							)}
 						</button>
 					))}
 				</div>
@@ -191,28 +261,53 @@ export function CategoryDropdown({ value, onChange, categories }: CategoryDropdo
 				}}
 			>
 				<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+					/>
 				</svg>
 				<span className="max-w-[100px] truncate">{selected ?? 'Category'}</span>
-				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
 			{open && (
-				<div className="absolute top-full left-0 mt-1 min-w-[180px] max-h-[300px] overflow-auto rounded-lg border shadow-xl z-[100]" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}>
+				<div
+					className="absolute top-full left-0 mt-1 min-w-[180px] max-h-[300px] overflow-auto rounded-lg border shadow-xl z-[100]"
+					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
+				>
 					<button
-						onClick={() => { onChange(null); setOpen(false) }}
+						onClick={() => {
+							onChange(null)
+							setOpen(false)
+						}}
 						className="w-full flex items-center px-3 py-2 text-xs text-left transition-colors"
-						style={{ color: !value ? 'var(--accent)' : 'var(--text-muted)', backgroundColor: !value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}
+						style={{
+							color: !value ? 'var(--accent)' : 'var(--text-muted)',
+							backgroundColor: !value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+						}}
 					>
 						All
 					</button>
 					{names.map((name) => (
 						<button
 							key={name}
-							onClick={() => { onChange(name); setOpen(false) }}
+							onClick={() => {
+								onChange(name)
+								setOpen(false)
+							}}
 							className="w-full px-3 py-2 text-xs text-left transition-colors truncate"
-							style={{ color: value === name ? 'var(--accent)' : 'var(--text-muted)', backgroundColor: value === name ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}
+							style={{
+								color: value === name ? 'var(--accent)' : 'var(--text-muted)',
+								backgroundColor: value === name ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+							}}
 						>
 							{name}
 						</button>
@@ -254,28 +349,53 @@ export function TagDropdown({ value, onChange, tags }: TagDropdownProps) {
 				}}
 			>
 				<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
+					/>
 				</svg>
 				<span className="max-w-[100px] truncate">{selected ?? 'Tag'}</span>
-				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
 			{open && (
-				<div className="absolute top-full left-0 mt-1 min-w-[180px] max-h-[300px] overflow-auto rounded-lg border shadow-xl z-[100]" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}>
+				<div
+					className="absolute top-full left-0 mt-1 min-w-[180px] max-h-[300px] overflow-auto rounded-lg border shadow-xl z-[100]"
+					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
+				>
 					<button
-						onClick={() => { onChange(null); setOpen(false) }}
+						onClick={() => {
+							onChange(null)
+							setOpen(false)
+						}}
 						className="w-full flex items-center px-3 py-2 text-xs text-left transition-colors"
-						style={{ color: !value ? 'var(--accent)' : 'var(--text-muted)', backgroundColor: !value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}
+						style={{
+							color: !value ? 'var(--accent)' : 'var(--text-muted)',
+							backgroundColor: !value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+						}}
 					>
 						All
 					</button>
 					{tags.map((tag) => (
 						<button
 							key={tag}
-							onClick={() => { onChange(tag); setOpen(false) }}
+							onClick={() => {
+								onChange(tag)
+								setOpen(false)
+							}}
 							className="w-full px-3 py-2 text-xs text-left transition-colors truncate"
-							style={{ color: value === tag ? 'var(--accent)' : 'var(--text-muted)', backgroundColor: value === tag ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}
+							style={{
+								color: value === tag ? 'var(--accent)' : 'var(--text-muted)',
+								backgroundColor: value === tag ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+							}}
 						>
 							{tag}
 						</button>
@@ -295,7 +415,11 @@ export function ManageButton({ onClick }: { onClick: () => void }) {
 			title="Manage categories & tags"
 		>
 			<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-				<path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+				/>
 				<path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 			</svg>
 		</button>
@@ -323,7 +447,13 @@ export function TrackerDropdown({ value, onChange, trackers }: TrackerDropdownPr
 			onChange={onChange}
 			options={options}
 			placeholder="Tracker"
-			icon={<path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />}
+			icon={
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+				/>
+			}
 		/>
 	)
 }
@@ -378,7 +508,9 @@ export function ColumnSelector({ columns, visible, onChange, columnOrder, onReor
 		setDraggedId(null)
 	}
 
-	const orderedColumns = columnOrder.map(id => columns.find(c => c.id === id)).filter((c): c is ColumnDef => c !== undefined)
+	const orderedColumns = columnOrder
+		.map((id) => columns.find((c) => c.id === id))
+		.filter((c): c is ColumnDef => c !== undefined)
 
 	return (
 		<div ref={ref} className="relative">
@@ -389,9 +521,19 @@ export function ColumnSelector({ columns, visible, onChange, columnOrder, onReor
 				title="Configure columns"
 			>
 				<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25v9.75m0 0h9.75" />
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25v9.75m0 0h9.75"
+					/>
 				</svg>
-				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
@@ -400,10 +542,18 @@ export function ColumnSelector({ columns, visible, onChange, columnOrder, onReor
 					className="absolute top-full right-0 mt-1 min-w-[200px] max-h-[400px] overflow-auto rounded-lg border shadow-xl z-[100]"
 					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
 				>
-					<div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
-						<span className="text-[10px] uppercase tracking-widest font-medium" style={{ color: 'var(--text-muted)' }}>Columns</span>
+					<div
+						className="flex items-center justify-between px-3 py-2 border-b"
+						style={{ borderColor: 'var(--border)' }}
+					>
+						<span className="text-[10px] uppercase tracking-widest font-medium" style={{ color: 'var(--text-muted)' }}>
+							Columns
+						</span>
 						<button
-							onClick={() => { onReset(); setOpen(false) }}
+							onClick={() => {
+								onReset()
+								setOpen(false)
+							}}
 							className="text-[10px] transition-colors hover:opacity-80"
 							style={{ color: 'var(--accent)' }}
 						>
@@ -420,16 +570,27 @@ export function ColumnSelector({ columns, visible, onChange, columnOrder, onReor
 							className={`flex items-center gap-2 px-2 py-2 text-xs transition-colors hover:bg-white/5 cursor-move ${draggedId === col.id ? 'opacity-50' : ''}`}
 							style={{ color: 'var(--text-primary)' }}
 						>
-							<svg className="w-3 h-3 shrink-0" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<svg
+								className="w-3 h-3 shrink-0"
+								style={{ color: 'var(--text-muted)' }}
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
 							</svg>
-							<button
-								onClick={() => toggle(col.id)}
-								className="flex-1 flex items-center justify-between text-left"
-							>
+							<button onClick={() => toggle(col.id)} className="flex-1 flex items-center justify-between text-left">
 								<span>{col.label}</span>
 								{visible.has(col.id) && (
-									<svg className="w-3 h-3" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+									<svg
+										className="w-3 h-3"
+										style={{ color: 'var(--accent)' }}
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										strokeWidth={3}
+									>
 										<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 									</svg>
 								)}

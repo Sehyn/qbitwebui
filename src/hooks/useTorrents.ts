@@ -80,8 +80,7 @@ export function useAddTags() {
 	const instance = useInstance()
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: ({ hashes, tags }: { hashes: string[]; tags: string }) =>
-			api.addTags(instance.id, hashes, tags),
+		mutationFn: ({ hashes, tags }: { hashes: string[]; tags: string }) => api.addTags(instance.id, hashes, tags),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['torrents', instance.id] })
 			queryClient.invalidateQueries({ queryKey: ['tags', instance.id] })
@@ -93,8 +92,7 @@ export function useRemoveTags() {
 	const instance = useInstance()
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: ({ hashes, tags }: { hashes: string[]; tags: string }) =>
-			api.removeTags(instance.id, hashes, tags),
+		mutationFn: ({ hashes, tags }: { hashes: string[]; tags: string }) => api.removeTags(instance.id, hashes, tags),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['torrents', instance.id] })
 			queryClient.invalidateQueries({ queryKey: ['tags', instance.id] })
@@ -106,8 +104,7 @@ export function useRenameTorrent() {
 	const instance = useInstance()
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: ({ hash, name }: { hash: string; name: string }) =>
-			api.renameTorrent(instance.id, hash, name),
+		mutationFn: ({ hash, name }: { hash: string; name: string }) => api.renameTorrent(instance.id, hash, name),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['torrents', instance.id] }),
 	})
 }
@@ -168,7 +165,6 @@ export function useDeleteCategory() {
 export function useExportTorrents() {
 	const instance = useInstance()
 	return useMutation({
-		mutationFn: (torrents: { hash: string; name: string }[]) =>
-			api.exportTorrents(instance.id, torrents),
+		mutationFn: (torrents: { hash: string; name: string }[]) => api.exportTorrents(instance.id, torrents),
 	})
 }

@@ -77,7 +77,10 @@ files.get('/', async (c) => {
 	}
 })
 
-async function* walkDir(dir: string, base: string): AsyncGenerator<{ path: string; fullPath: string; stats: Awaited<ReturnType<typeof stat>> }> {
+async function* walkDir(
+	dir: string,
+	base: string
+): AsyncGenerator<{ path: string; fullPath: string; stats: Awaited<ReturnType<typeof stat>> }> {
 	const entries = await readdir(dir)
 	for (const name of entries) {
 		const fullPath = join(dir, name)
@@ -146,10 +149,13 @@ files.get('/download', async (c) => {
 			const streamFiles = async () => {
 				for await (const file of walkDir(safePath, '')) {
 					await new Promise<void>((resolve, reject) => {
-						const entry = pack.entry({ name: file.path, size: Number(file.stats.size), mtime: file.stats.mtime }, (err) => {
-							if (err) reject(err)
-							else resolve()
-						})
+						const entry = pack.entry(
+							{ name: file.path, size: Number(file.stats.size), mtime: file.stats.mtime },
+							(err) => {
+								if (err) reject(err)
+								else resolve()
+							}
+						)
 						const stream = createReadStream(file.fullPath)
 						stream.pipe(entry)
 					})
@@ -161,7 +167,9 @@ files.get('/download', async (c) => {
 			const webStream = new ReadableStream({
 				async pull(controller) {
 					while (chunks.length === 0 && !streamEnded && !streamError) {
-						await new Promise<void>(r => { resolveWait = r })
+						await new Promise<void>((r) => {
+							resolveWait = r
+						})
 					}
 					if (streamError) {
 						controller.error(streamError)
@@ -176,7 +184,7 @@ files.get('/download', async (c) => {
 				},
 				cancel() {
 					pack.destroy()
-				}
+				},
 			})
 
 			return new Response(webStream, {

@@ -31,46 +31,49 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 	const lastPeerIdRef = useRef(-1)
 	const containerRef = useRef<HTMLDivElement>(null)
 
-	const fetchLogs = useCallback(async (incremental = false) => {
-		if (!selectedInstance) return
-		setLoading(true)
-		try {
-			if (tab === 'main') {
-				const lastId = incremental ? lastMainIdRef.current : -1
-				const entries = await getLog(selectedInstance, { ...filters, lastKnownId: lastId })
-				if (entries.length > 0) {
-					lastMainIdRef.current = Math.max(...entries.map(e => e.id))
-					if (incremental) {
-						setMainLogs(prev => [...prev, ...entries])
-					} else {
-						setMainLogs(entries)
+	const fetchLogs = useCallback(
+		async (incremental = false) => {
+			if (!selectedInstance) return
+			setLoading(true)
+			try {
+				if (tab === 'main') {
+					const lastId = incremental ? lastMainIdRef.current : -1
+					const entries = await getLog(selectedInstance, { ...filters, lastKnownId: lastId })
+					if (entries.length > 0) {
+						lastMainIdRef.current = Math.max(...entries.map((e) => e.id))
+						if (incremental) {
+							setMainLogs((prev) => [...prev, ...entries])
+						} else {
+							setMainLogs(entries)
+						}
+					} else if (!incremental) {
+						setMainLogs([])
 					}
-				} else if (!incremental) {
-					setMainLogs([])
-				}
-			} else {
-				const lastId = incremental ? lastPeerIdRef.current : -1
-				const entries = await getPeerLog(selectedInstance, lastId === -1 ? undefined : lastId)
-				if (entries.length > 0) {
-					lastPeerIdRef.current = Math.max(...entries.map(e => e.id))
-					if (incremental) {
-						setPeerLogs(prev => [...prev, ...entries])
-					} else {
-						setPeerLogs(entries)
+				} else {
+					const lastId = incremental ? lastPeerIdRef.current : -1
+					const entries = await getPeerLog(selectedInstance, lastId === -1 ? undefined : lastId)
+					if (entries.length > 0) {
+						lastPeerIdRef.current = Math.max(...entries.map((e) => e.id))
+						if (incremental) {
+							setPeerLogs((prev) => [...prev, ...entries])
+						} else {
+							setPeerLogs(entries)
+						}
+					} else if (!incremental) {
+						setPeerLogs([])
 					}
-				} else if (!incremental) {
-					setPeerLogs([])
 				}
+			} catch {
+				if (!incremental) {
+					if (tab === 'main') setMainLogs([])
+					else setPeerLogs([])
+				}
+			} finally {
+				setLoading(false)
 			}
-		} catch {
-			if (!incremental) {
-				if (tab === 'main') setMainLogs([])
-				else setPeerLogs([])
-			}
-		} finally {
-			setLoading(false)
-		}
-	}, [selectedInstance, tab, filters])
+		},
+		[selectedInstance, tab, filters]
+	)
 
 	useEffect(() => {
 		if (tab === 'main') {
@@ -114,14 +117,17 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 	}
 
 	function toggleFilter(key: keyof typeof filters) {
-		setFilters(f => ({ ...f, [key]: !f[key] }))
+		setFilters((f) => ({ ...f, [key]: !f[key] }))
 	}
 
 	const activeFilterCount = Object.values(filters).filter(Boolean).length
 
 	return (
 		<div className="flex flex-col h-full">
-			<div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-primary)' }}>
+			<div
+				className="flex items-center gap-3 px-4 py-3 border-b"
+				style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-primary)' }}
+			>
 				<button
 					onClick={onBack}
 					className="p-2 -ml-2 rounded-xl active:scale-95 transition-transform"
@@ -132,7 +138,9 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 					</svg>
 				</button>
 				<div className="flex-1">
-					<h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Log Viewer</h1>
+					<h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+						Log Viewer
+					</h1>
 					{autoRefresh && (
 						<span className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
 							<span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent)' }} />
@@ -145,11 +153,15 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 					className="p-2 rounded-xl active:scale-95 transition-transform relative"
 					style={{
 						color: showFilters ? 'var(--accent)' : 'var(--text-muted)',
-						backgroundColor: showFilters ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent'
+						backgroundColor: showFilters ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
 					}}
 				>
 					<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+						/>
 					</svg>
 					{activeFilterCount < 4 && (
 						<span
@@ -166,14 +178,27 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 					className="p-2 rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
 					style={{ color: 'var(--accent)' }}
 				>
-					<svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+					<svg
+						className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={2}
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+						/>
 					</svg>
 				</button>
 			</div>
 
 			{showFilters && (
-				<div className="p-4 border-b space-y-4" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+				<div
+					className="p-4 border-b space-y-4"
+					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+				>
 					<div className="space-y-2">
 						<label className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
 							Instance
@@ -182,10 +207,16 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 							value={selectedInstance}
 							onChange={(e) => setSelectedInstance(Number(e.target.value))}
 							className="w-full px-3 py-2.5 rounded-xl border text-sm appearance-none"
-							style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+							style={{
+								backgroundColor: 'var(--bg-tertiary)',
+								borderColor: 'var(--border)',
+								color: 'var(--text-primary)',
+							}}
 						>
-							{instances.map(i => (
-								<option key={i.id} value={i.id}>{i.label}</option>
+							{instances.map((i) => (
+								<option key={i.id} value={i.id}>
+									{i.label}
+								</option>
 							))}
 						</select>
 					</div>
@@ -198,13 +229,14 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 							{[
 								{ value: 'newest' as const, label: 'Newest first' },
 								{ value: 'oldest' as const, label: 'Oldest first' },
-							].map(opt => (
+							].map((opt) => (
 								<button
 									key={opt.value}
 									onClick={() => setSortOrder(opt.value)}
 									className="flex-1 px-3 py-2 rounded-xl text-sm font-medium transition-all border"
 									style={{
-										backgroundColor: sortOrder === opt.value ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
+										backgroundColor:
+											sortOrder === opt.value ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
 										borderColor: sortOrder === opt.value ? 'var(--accent)' : 'var(--border)',
 										color: sortOrder === opt.value ? 'var(--accent)' : 'var(--text-secondary)',
 									}}
@@ -256,7 +288,9 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 					)}
 
 					<div className="flex items-center justify-between pt-2">
-						<span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Auto-refresh</span>
+						<span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+							Auto-refresh
+						</span>
 						<div
 							className="w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer"
 							style={{ backgroundColor: autoRefresh ? 'var(--accent)' : 'var(--bg-tertiary)' }}
@@ -274,8 +308,11 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 				</div>
 			)}
 
-			<div className="flex items-center gap-1 p-1.5 mx-4 my-2 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-				{(['main', 'peers'] as const).map(t => (
+			<div
+				className="flex items-center gap-1 p-1.5 mx-4 my-2 rounded-lg"
+				style={{ backgroundColor: 'var(--bg-tertiary)' }}
+			>
+				{(['main', 'peers'] as const).map((t) => (
 					<button
 						key={t}
 						onClick={() => setTab(t)}
@@ -294,105 +331,133 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 			<div ref={containerRef} className="flex-1 overflow-auto">
 				{!selectedInstance ? (
 					<div className="text-center py-16">
-						<svg className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z" />
+						<svg
+							className="w-12 h-12 mx-auto mb-3"
+							style={{ color: 'var(--text-muted)' }}
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={1}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z"
+							/>
 						</svg>
-						<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No instances</p>
+						<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+							No instances
+						</p>
 					</div>
 				) : logCount === 0 && !loading ? (
 					<div className="text-center py-16">
-						<svg className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+						<svg
+							className="w-12 h-12 mx-auto mb-3"
+							style={{ color: 'var(--text-muted)' }}
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={1}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+							/>
 						</svg>
-						<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No logs</p>
+						<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+							No logs
+						</p>
 						<p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
 							{tab === 'main' && activeFilterCount < 4 ? 'Adjust filters' : 'Pull to refresh'}
 						</p>
 					</div>
 				) : (
 					<div>
-						{tab === 'main' ? sortedMainLogs.map((entry, idx) => {
-							const typeInfo = LOG_TYPES[entry.type as keyof typeof LOG_TYPES] || LOG_TYPES[1]
-							const prevEntry = sortedMainLogs[idx - 1]
-							const showDate = !prevEntry || formatDate(entry.timestamp) !== formatDate(prevEntry.timestamp)
+						{tab === 'main'
+							? sortedMainLogs.map((entry, idx) => {
+									const typeInfo = LOG_TYPES[entry.type as keyof typeof LOG_TYPES] || LOG_TYPES[1]
+									const prevEntry = sortedMainLogs[idx - 1]
+									const showDate = !prevEntry || formatDate(entry.timestamp) !== formatDate(prevEntry.timestamp)
 
-							return (
-								<div key={entry.id}>
-									{showDate && (
-										<div
-											className="px-4 py-2 text-xs font-medium sticky top-0"
-											style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
-										>
-											{formatDate(entry.timestamp)}
-										</div>
-									)}
-									<div
-										className="px-4 py-3 border-b"
-										style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
-									>
-										<div className="flex items-center gap-2 mb-1.5">
-											<span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
-												{formatTime(entry.timestamp)}
-											</span>
-											<span
-												className="px-2 py-0.5 rounded text-xs font-medium"
-												style={{ backgroundColor: typeInfo.bg, color: typeInfo.color }}
+									return (
+										<div key={entry.id}>
+											{showDate && (
+												<div
+													className="px-4 py-2 text-xs font-medium sticky top-0"
+													style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+												>
+													{formatDate(entry.timestamp)}
+												</div>
+											)}
+											<div
+												className="px-4 py-3 border-b"
+												style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
 											>
-												{typeInfo.label}
-											</span>
+												<div className="flex items-center gap-2 mb-1.5">
+													<span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatTime(entry.timestamp)}
+													</span>
+													<span
+														className="px-2 py-0.5 rounded text-xs font-medium"
+														style={{ backgroundColor: typeInfo.bg, color: typeInfo.color }}
+													>
+														{typeInfo.label}
+													</span>
+												</div>
+												<p className="text-sm break-words font-mono" style={{ color: 'var(--text-primary)' }}>
+													{entry.message}
+												</p>
+											</div>
 										</div>
-										<p className="text-sm break-words font-mono" style={{ color: 'var(--text-primary)' }}>
-											{entry.message}
-										</p>
-									</div>
-								</div>
-							)
-						}) : sortedPeerLogs.map((entry, idx) => {
-							const prevEntry = sortedPeerLogs[idx - 1]
-							const showDate = !prevEntry || formatDate(entry.timestamp) !== formatDate(prevEntry.timestamp)
+									)
+								})
+							: sortedPeerLogs.map((entry, idx) => {
+									const prevEntry = sortedPeerLogs[idx - 1]
+									const showDate = !prevEntry || formatDate(entry.timestamp) !== formatDate(prevEntry.timestamp)
 
-							return (
-								<div key={entry.id}>
-									{showDate && (
-										<div
-											className="px-4 py-2 text-xs font-medium sticky top-0"
-											style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
-										>
-											{formatDate(entry.timestamp)}
-										</div>
-									)}
-									<div
-										className="px-4 py-3 border-b"
-										style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
-									>
-										<div className="flex items-center gap-2 mb-1.5">
-											<span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
-												{formatTime(entry.timestamp)}
-											</span>
-											<span
-												className="px-2 py-0.5 rounded text-xs font-medium"
-												style={{
-													backgroundColor: entry.blocked
-														? 'color-mix(in srgb, var(--error) 12%, transparent)'
-														: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-													color: entry.blocked ? 'var(--error)' : 'var(--accent)'
-												}}
+									return (
+										<div key={entry.id}>
+											{showDate && (
+												<div
+													className="px-4 py-2 text-xs font-medium sticky top-0"
+													style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+												>
+													{formatDate(entry.timestamp)}
+												</div>
+											)}
+											<div
+												className="px-4 py-3 border-b"
+												style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
 											>
-												{entry.blocked ? 'Blocked' : 'Connected'}
-											</span>
+												<div className="flex items-center gap-2 mb-1.5">
+													<span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatTime(entry.timestamp)}
+													</span>
+													<span
+														className="px-2 py-0.5 rounded text-xs font-medium"
+														style={{
+															backgroundColor: entry.blocked
+																? 'color-mix(in srgb, var(--error) 12%, transparent)'
+																: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+															color: entry.blocked ? 'var(--error)' : 'var(--accent)',
+														}}
+													>
+														{entry.blocked ? 'Blocked' : 'Connected'}
+													</span>
+												</div>
+												<p className="text-sm font-mono" style={{ color: 'var(--text-primary)' }}>
+													{entry.ip}
+												</p>
+												{entry.reason && (
+													<p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+														{entry.reason}
+													</p>
+												)}
+											</div>
 										</div>
-										<p className="text-sm font-mono" style={{ color: 'var(--text-primary)' }}>
-											{entry.ip}
-										</p>
-										{entry.reason && (
-											<p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-												{entry.reason}
-											</p>
-										)}
-									</div>
-								</div>
-							)
-						})}
+									)
+								})}
 					</div>
 				)}
 			</div>
@@ -403,7 +468,7 @@ export function MobileLogViewer({ instances, onBack }: Props) {
 					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
 				>
 					<span>{logCount} entries</span>
-					<span>{instances.find(i => i.id === selectedInstance)?.label}</span>
+					<span>{instances.find((i) => i.id === selectedInstance)?.label}</span>
 				</div>
 			)}
 		</div>

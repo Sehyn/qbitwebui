@@ -8,7 +8,13 @@ interface SelectProps<T extends string | number> {
 	minWidth?: string
 }
 
-export function Select<T extends string | number>({ value, options, onChange, className, minWidth = '120px' }: SelectProps<T>) {
+export function Select<T extends string | number>({
+	value,
+	options,
+	onChange,
+	className,
+	minWidth = '120px',
+}: SelectProps<T>) {
 	const [open, setOpen] = useState(false)
 	const ref = useRef<HTMLDivElement>(null)
 
@@ -20,7 +26,7 @@ export function Select<T extends string | number>({ value, options, onChange, cl
 		return () => document.removeEventListener('mousedown', handleClickOutside)
 	}, [])
 
-	const selected = options.find(o => o.value === value)
+	const selected = options.find((o) => o.value === value)
 
 	return (
 		<div ref={ref} className={`relative ${className || ''}`} style={{ minWidth }}>
@@ -31,7 +37,14 @@ export function Select<T extends string | number>({ value, options, onChange, cl
 				style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
 			>
 				<span className="truncate">{selected?.label}</span>
-				<svg className={`w-3 h-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-3 h-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+					style={{ color: 'var(--text-muted)' }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
@@ -44,11 +57,15 @@ export function Select<T extends string | number>({ value, options, onChange, cl
 						<button
 							key={o.value}
 							type="button"
-							onClick={() => { onChange(o.value); setOpen(false) }}
+							onClick={() => {
+								onChange(o.value)
+								setOpen(false)
+							}}
 							className="w-full px-2.5 py-1.5 text-left text-xs whitespace-nowrap transition-colors hover:bg-[var(--bg-tertiary)]"
 							style={{
 								color: value === o.value ? 'var(--accent)' : 'var(--text-primary)',
-								backgroundColor: value === o.value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+								backgroundColor:
+									value === o.value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
 							}}
 						>
 							{o.label}

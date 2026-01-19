@@ -65,9 +65,9 @@ proxy.all('/:id/qbt/*', async (c) => {
 		return c.json({ error: 'Invalid instance ID' }, 400)
 	}
 
-	const instance = db.query<Instance, [number, number]>(
-		'SELECT * FROM instances WHERE id = ? AND user_id = ?'
-	).get(instanceId, user.id)
+	const instance = db
+		.query<Instance, [number, number]>('SELECT * FROM instances WHERE id = ? AND user_id = ?')
+		.get(instanceId, user.id)
 
 	if (!instance) {
 		return c.json({ error: 'Instance not found' }, 404)
@@ -129,7 +129,9 @@ proxy.all('/:id/qbt/*', async (c) => {
 			headers: responseHeaders,
 		})
 	} catch (e) {
-		log.error(`qBittorrent proxy failed for instance ${instanceId}: ${e instanceof Error ? e.message : 'Unknown error'}`)
+		log.error(
+			`qBittorrent proxy failed for instance ${instanceId}: ${e instanceof Error ? e.message : 'Unknown error'}`
+		)
 		return c.json({ error: 'Failed to connect to qBittorrent instance' }, 502)
 	}
 })

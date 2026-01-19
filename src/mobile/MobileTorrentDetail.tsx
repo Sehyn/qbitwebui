@@ -27,7 +27,7 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 		queryFn: () => api.getTorrents(instanceId),
 		refetchInterval: 2000,
 	})
-	const torrent = torrents?.find(t => t.hash === torrentHash)
+	const torrent = torrents?.find((t) => t.hash === torrentHash)
 
 	const { data: properties } = useQuery({
 		queryKey: ['torrent-properties', instanceId, torrentHash],
@@ -106,7 +106,11 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 	const tabs: { id: Tab; label: string; count?: number }[] = [
 		{ id: 'general', label: 'General' },
 		{ id: 'files', label: 'Files', count: files?.length },
-		{ id: 'trackers', label: 'Trackers', count: trackers?.filter(t => t.url.startsWith('http') || t.url.startsWith('udp')).length },
+		{
+			id: 'trackers',
+			label: 'Trackers',
+			count: trackers?.filter((t) => t.url.startsWith('http') || t.url.startsWith('udp')).length,
+		},
 		{ id: 'peers', label: 'Peers', count: peers.length },
 		{ id: 'http', label: 'HTTP', count: webSeeds?.length },
 	]
@@ -126,7 +130,11 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 			<div
 				ref={sheetRef}
 				className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t max-h-[90vh] flex flex-col animate-slide-up"
-				style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+				style={{
+					backgroundColor: 'var(--bg-primary)',
+					borderColor: 'var(--border)',
+					paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+				}}
 			>
 				<div
 					className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
@@ -174,7 +182,11 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 						{isPaused ? (
 							<>
 								<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-									<path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
+									/>
 								</svg>
 								Resume
 							</>
@@ -193,7 +205,11 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 						style={{ backgroundColor: 'color-mix(in srgb, var(--error) 15%, transparent)', color: 'var(--error)' }}
 					>
 						<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+							/>
 						</svg>
 						Delete
 					</button>
@@ -214,13 +230,17 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 									color: tab === t.id ? 'var(--accent-contrast)' : 'var(--text-muted)',
 								}}
 							>
-								{t.label}{t.count !== undefined ? ` (${t.count})` : ''}
+								{t.label}
+								{t.count !== undefined ? ` (${t.count})` : ''}
 							</button>
 						))}
 					</div>
 				</div>
 
-				<div className="flex-1 min-h-0 overflow-y-auto px-4 pt-3" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 2rem))' }}>
+				<div
+					className="flex-1 min-h-0 overflow-y-auto px-4 pt-3"
+					style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 2rem))' }}
+				>
 					{tab === 'general' && (
 						<div className="space-y-3">
 							<InfoRow label="Size" value={formatSize(torrent.size)} />
@@ -257,7 +277,10 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 										{file.name}
 									</div>
 									<div className="flex items-center gap-3 mt-2">
-										<div className="flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+										<div
+											className="flex-1 h-1 rounded-full overflow-hidden"
+											style={{ backgroundColor: 'var(--bg-tertiary)' }}
+										>
 											<div
 												className="h-full rounded-full"
 												style={{ width: `${Math.round(file.progress * 100)}%`, backgroundColor: 'var(--accent)' }}
@@ -283,25 +306,34 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 
 					{tab === 'trackers' && (
 						<div className="space-y-2">
-							{trackers?.filter(t => t.url.startsWith('http') || t.url.startsWith('udp')).map((tracker, i) => (
-								<div
-									key={i}
-									className="p-3 rounded-xl border"
-									style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
-								>
-									<div className="text-xs font-mono break-all" style={{ color: 'var(--text-primary)' }}>
-										{tracker.url}
+							{trackers
+								?.filter((t) => t.url.startsWith('http') || t.url.startsWith('udp'))
+								.map((tracker, i) => (
+									<div
+										key={i}
+										className="p-3 rounded-xl border"
+										style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+									>
+										<div className="text-xs font-mono break-all" style={{ color: 'var(--text-primary)' }}>
+											{tracker.url}
+										</div>
+										<div className="flex items-center gap-3 mt-2 text-xs">
+											<span style={{ color: tracker.status === 2 ? '#a6e3a1' : 'var(--text-muted)' }}>
+												{tracker.status === 2
+													? 'Working'
+													: tracker.status === 3
+														? 'Updating'
+														: tracker.status === 4
+															? 'Error'
+															: 'Disabled'}
+											</span>
+											<span style={{ color: 'var(--text-muted)' }}>Seeds: {tracker.num_seeds}</span>
+											<span style={{ color: 'var(--text-muted)' }}>Peers: {tracker.num_peers}</span>
+										</div>
 									</div>
-									<div className="flex items-center gap-3 mt-2 text-xs">
-										<span style={{ color: tracker.status === 2 ? '#a6e3a1' : 'var(--text-muted)' }}>
-											{tracker.status === 2 ? 'Working' : tracker.status === 3 ? 'Updating' : tracker.status === 4 ? 'Error' : 'Disabled'}
-										</span>
-										<span style={{ color: 'var(--text-muted)' }}>Seeds: {tracker.num_seeds}</span>
-										<span style={{ color: 'var(--text-muted)' }}>Peers: {tracker.num_peers}</span>
-									</div>
-								</div>
-							))}
-							{(!trackers || trackers.filter(t => t.url.startsWith('http') || t.url.startsWith('udp')).length === 0) && (
+								))}
+							{(!trackers ||
+								trackers.filter((t) => t.url.startsWith('http') || t.url.startsWith('udp')).length === 0) && (
 								<div className="py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
 									No trackers
 								</div>
@@ -429,10 +461,22 @@ export function MobileTorrentDetail({ torrentHash, instanceId, onClose }: Props)
 	)
 }
 
-function InfoRow({ label, value, accent, small }: { label: string; value: string; accent?: string | boolean; small?: boolean }) {
+function InfoRow({
+	label,
+	value,
+	accent,
+	small,
+}: {
+	label: string
+	value: string
+	accent?: string | boolean
+	small?: boolean
+}) {
 	return (
 		<div className="flex items-start justify-between gap-4">
-			<span className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</span>
+			<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+				{label}
+			</span>
 			<span
 				className={`text-xs text-right ${small ? 'max-w-[200px] truncate' : ''}`}
 				style={{ color: accent ? (typeof accent === 'string' ? accent : 'var(--accent)') : 'var(--text-primary)' }}

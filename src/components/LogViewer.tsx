@@ -30,46 +30,49 @@ export function LogViewer({ instances }: Props) {
 	const lastPeerIdRef = useRef(-1)
 	const containerRef = useRef<HTMLDivElement>(null)
 
-	const fetchLogs = useCallback(async (incremental = false) => {
-		if (!selectedInstance) return
-		setLoading(true)
-		try {
-			if (tab === 'main') {
-				const lastId = incremental ? lastMainIdRef.current : -1
-				const entries = await getLog(selectedInstance, { ...filters, lastKnownId: lastId })
-				if (entries.length > 0) {
-					lastMainIdRef.current = Math.max(...entries.map(e => e.id))
-					if (incremental) {
-						setMainLogs(prev => [...prev, ...entries])
-					} else {
-						setMainLogs(entries)
+	const fetchLogs = useCallback(
+		async (incremental = false) => {
+			if (!selectedInstance) return
+			setLoading(true)
+			try {
+				if (tab === 'main') {
+					const lastId = incremental ? lastMainIdRef.current : -1
+					const entries = await getLog(selectedInstance, { ...filters, lastKnownId: lastId })
+					if (entries.length > 0) {
+						lastMainIdRef.current = Math.max(...entries.map((e) => e.id))
+						if (incremental) {
+							setMainLogs((prev) => [...prev, ...entries])
+						} else {
+							setMainLogs(entries)
+						}
+					} else if (!incremental) {
+						setMainLogs([])
 					}
-				} else if (!incremental) {
-					setMainLogs([])
-				}
-			} else {
-				const lastId = incremental ? lastPeerIdRef.current : -1
-				const entries = await getPeerLog(selectedInstance, lastId === -1 ? undefined : lastId)
-				if (entries.length > 0) {
-					lastPeerIdRef.current = Math.max(...entries.map(e => e.id))
-					if (incremental) {
-						setPeerLogs(prev => [...prev, ...entries])
-					} else {
-						setPeerLogs(entries)
+				} else {
+					const lastId = incremental ? lastPeerIdRef.current : -1
+					const entries = await getPeerLog(selectedInstance, lastId === -1 ? undefined : lastId)
+					if (entries.length > 0) {
+						lastPeerIdRef.current = Math.max(...entries.map((e) => e.id))
+						if (incremental) {
+							setPeerLogs((prev) => [...prev, ...entries])
+						} else {
+							setPeerLogs(entries)
+						}
+					} else if (!incremental) {
+						setPeerLogs([])
 					}
-				} else if (!incremental) {
-					setPeerLogs([])
 				}
+			} catch {
+				if (!incremental) {
+					if (tab === 'main') setMainLogs([])
+					else setPeerLogs([])
+				}
+			} finally {
+				setLoading(false)
 			}
-		} catch {
-			if (!incremental) {
-				if (tab === 'main') setMainLogs([])
-				else setPeerLogs([])
-			}
-		} finally {
-			setLoading(false)
-		}
-	}, [selectedInstance, tab, filters])
+		},
+		[selectedInstance, tab, filters]
+	)
 
 	useEffect(() => {
 		if (tab === 'main') {
@@ -104,10 +107,7 @@ export function LogViewer({ instances }: Props) {
 
 	const logCount = tab === 'main' ? sortedMainLogs.length : sortedPeerLogs.length
 
-	const instanceOptions = useMemo(() =>
-		instances.map(i => ({ value: i.id, label: i.label })),
-		[instances]
-	)
+	const instanceOptions = useMemo(() => instances.map((i) => ({ value: i.id, label: i.label })), [instances])
 
 	const sortOptions: { value: SortOrder; label: string }[] = [
 		{ value: 'newest', label: 'Newest first' },
@@ -119,7 +119,7 @@ export function LogViewer({ instances }: Props) {
 	}
 
 	function toggleFilter(key: keyof typeof filters) {
-		setFilters(f => ({ ...f, [key]: !f[key] }))
+		setFilters((f) => ({ ...f, [key]: !f[key] }))
 	}
 
 	const activeFilterCount = Object.values(filters).filter(Boolean).length
@@ -128,7 +128,9 @@ export function LogViewer({ instances }: Props) {
 		<div>
 			<div className="flex items-center justify-between mb-6">
 				<div>
-					<h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Log Viewer</h1>
+					<h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+						Log Viewer
+					</h1>
 					<p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
 						View qBittorrent application and peer logs
 					</p>
@@ -147,7 +149,9 @@ export function LogViewer({ instances }: Props) {
 							</svg>
 							Loading
 						</span>
-					) : 'Refresh'}
+					) : (
+						'Refresh'
+					)}
 				</button>
 			</div>
 
@@ -172,16 +176,14 @@ export function LogViewer({ instances }: Props) {
 						<label className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
 							Sort
 						</label>
-						<Select
-							value={sortOrder}
-							options={sortOptions}
-							onChange={setSortOrder}
-							minWidth="130px"
-						/>
+						<Select value={sortOrder} options={sortOptions} onChange={setSortOrder} minWidth="130px" />
 					</div>
 
-					<div className="flex items-center gap-1 p-1 rounded-lg ml-auto" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-						{(['main', 'peers'] as const).map(t => (
+					<div
+						className="flex items-center gap-1 p-1 rounded-lg ml-auto"
+						style={{ backgroundColor: 'var(--bg-tertiary)' }}
+					>
+						{(['main', 'peers'] as const).map((t) => (
 							<button
 								key={t}
 								onClick={() => setTab(t)}
@@ -198,10 +200,16 @@ export function LogViewer({ instances }: Props) {
 					</div>
 				</div>
 
-				<div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+				<div
+					className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t"
+					style={{ borderColor: 'var(--border)' }}
+				>
 					{tab === 'main' && (
 						<div className="flex items-center gap-2">
-							<span className="text-xs font-medium uppercase tracking-wider mr-1" style={{ color: 'var(--text-muted)' }}>
+							<span
+								className="text-xs font-medium uppercase tracking-wider mr-1"
+								style={{ color: 'var(--text-muted)' }}
+							>
 								Types
 							</span>
 							{Object.entries(LOG_TYPES).map(([type, { label, color, bg }]) => {
@@ -236,7 +244,9 @@ export function LogViewer({ instances }: Props) {
 					)}
 
 					<label className="flex items-center gap-2 cursor-pointer select-none ml-auto">
-						<span className="text-xs" style={{ color: 'var(--text-muted)' }}>Auto-refresh</span>
+						<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+							Auto-refresh
+						</span>
 						<div
 							className="w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer"
 							style={{ backgroundColor: autoRefresh ? 'var(--accent)' : 'var(--bg-tertiary)' }}
@@ -255,19 +265,53 @@ export function LogViewer({ instances }: Props) {
 			</div>
 
 			{!selectedInstance ? (
-				<div className="text-center py-16 rounded-xl border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-					<svg className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z" />
+				<div
+					className="text-center py-16 rounded-xl border"
+					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+				>
+					<svg
+						className="w-12 h-12 mx-auto mb-3"
+						style={{ color: 'var(--text-muted)' }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={1}
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z"
+						/>
 					</svg>
-					<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No instances configured</p>
-					<p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Add an instance to view logs</p>
+					<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+						No instances configured
+					</p>
+					<p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+						Add an instance to view logs
+					</p>
 				</div>
 			) : logCount === 0 && !loading ? (
-				<div className="text-center py-16 rounded-xl border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-					<svg className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+				<div
+					className="text-center py-16 rounded-xl border"
+					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+				>
+					<svg
+						className="w-12 h-12 mx-auto mb-3"
+						style={{ color: 'var(--text-muted)' }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={1}
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+						/>
 					</svg>
-					<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No log entries</p>
+					<p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+						No log entries
+					</p>
 					<p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
 						{tab === 'main' && activeFilterCount < 4 ? 'Try adjusting your filters' : 'Logs will appear here'}
 					</p>
@@ -282,15 +326,24 @@ export function LogViewer({ instances }: Props) {
 						<table className="w-full text-xs">
 							<thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
 								<tr>
-									<th className="text-left px-4 py-2.5 font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)', width: '150px' }}>
+									<th
+										className="text-left px-4 py-2.5 font-medium whitespace-nowrap"
+										style={{ color: 'var(--text-muted)', width: '150px' }}
+									>
 										Timestamp
 									</th>
 									{tab === 'main' ? (
-										<th className="text-left px-4 py-2.5 font-medium" style={{ color: 'var(--text-muted)', width: '90px' }}>
+										<th
+											className="text-left px-4 py-2.5 font-medium"
+											style={{ color: 'var(--text-muted)', width: '90px' }}
+										>
 											Level
 										</th>
 									) : (
-										<th className="text-left px-4 py-2.5 font-medium" style={{ color: 'var(--text-muted)', width: '90px' }}>
+										<th
+											className="text-left px-4 py-2.5 font-medium"
+											style={{ color: 'var(--text-muted)', width: '90px' }}
+										>
 											Status
 										</th>
 									)}
@@ -305,60 +358,65 @@ export function LogViewer({ instances }: Props) {
 								</tr>
 							</thead>
 							<tbody className="font-mono">
-								{tab === 'main' ? sortedMainLogs.map((entry) => {
-									const typeInfo = LOG_TYPES[entry.type as keyof typeof LOG_TYPES] || LOG_TYPES[1]
-									return (
-										<tr
-											key={entry.id}
-											className="border-t transition-colors hover:bg-[var(--bg-tertiary)]"
-											style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
-										>
-											<td className="px-4 py-2 whitespace-nowrap tabular-nums" style={{ color: 'var(--text-muted)' }}>
-												{formatTime(entry.timestamp)}
-											</td>
-											<td className="px-4 py-2">
-												<span
-													className="inline-block px-2 py-0.5 rounded text-xs font-medium"
-													style={{ backgroundColor: typeInfo.bg, color: typeInfo.color }}
+								{tab === 'main'
+									? sortedMainLogs.map((entry) => {
+											const typeInfo = LOG_TYPES[entry.type as keyof typeof LOG_TYPES] || LOG_TYPES[1]
+											return (
+												<tr
+													key={entry.id}
+													className="border-t transition-colors hover:bg-[var(--bg-tertiary)]"
+													style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
 												>
-													{typeInfo.label}
-												</span>
-											</td>
-											<td className="px-4 py-2 break-all" style={{ color: 'var(--text-primary)' }}>
-												{entry.message}
-											</td>
-										</tr>
-									)
-								}) : sortedPeerLogs.map((entry) => (
-									<tr
-										key={entry.id}
-										className="border-t transition-colors hover:bg-[var(--bg-tertiary)]"
-										style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
-									>
-										<td className="px-4 py-2 whitespace-nowrap tabular-nums" style={{ color: 'var(--text-muted)' }}>
-											{formatTime(entry.timestamp)}
-										</td>
-										<td className="px-4 py-2">
-											<span
-												className="inline-block px-2 py-0.5 rounded text-xs font-medium"
-												style={{
-													backgroundColor: entry.blocked
-														? 'color-mix(in srgb, var(--error) 12%, transparent)'
-														: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-													color: entry.blocked ? 'var(--error)' : 'var(--accent)'
-												}}
+													<td
+														className="px-4 py-2 whitespace-nowrap tabular-nums"
+														style={{ color: 'var(--text-muted)' }}
+													>
+														{formatTime(entry.timestamp)}
+													</td>
+													<td className="px-4 py-2">
+														<span
+															className="inline-block px-2 py-0.5 rounded text-xs font-medium"
+															style={{ backgroundColor: typeInfo.bg, color: typeInfo.color }}
+														>
+															{typeInfo.label}
+														</span>
+													</td>
+													<td className="px-4 py-2 break-all" style={{ color: 'var(--text-primary)' }}>
+														{entry.message}
+													</td>
+												</tr>
+											)
+										})
+									: sortedPeerLogs.map((entry) => (
+											<tr
+												key={entry.id}
+												className="border-t transition-colors hover:bg-[var(--bg-tertiary)]"
+												style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
 											>
-												{entry.blocked ? 'Blocked' : 'Connected'}
-											</span>
-										</td>
-										<td className="px-4 py-2" style={{ color: 'var(--text-primary)' }}>
-											{entry.ip}
-										</td>
-										<td className="px-4 py-2 break-all" style={{ color: 'var(--text-muted)' }}>
-											{entry.reason || '—'}
-										</td>
-									</tr>
-								))}
+												<td className="px-4 py-2 whitespace-nowrap tabular-nums" style={{ color: 'var(--text-muted)' }}>
+													{formatTime(entry.timestamp)}
+												</td>
+												<td className="px-4 py-2">
+													<span
+														className="inline-block px-2 py-0.5 rounded text-xs font-medium"
+														style={{
+															backgroundColor: entry.blocked
+																? 'color-mix(in srgb, var(--error) 12%, transparent)'
+																: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+															color: entry.blocked ? 'var(--error)' : 'var(--accent)',
+														}}
+													>
+														{entry.blocked ? 'Blocked' : 'Connected'}
+													</span>
+												</td>
+												<td className="px-4 py-2" style={{ color: 'var(--text-primary)' }}>
+													{entry.ip}
+												</td>
+												<td className="px-4 py-2 break-all" style={{ color: 'var(--text-muted)' }}>
+													{entry.reason || '—'}
+												</td>
+											</tr>
+										))}
 							</tbody>
 						</table>
 					</div>

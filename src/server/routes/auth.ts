@@ -41,25 +41,21 @@ auth.post('/register', async (c) => {
 		return c.json({ error: passwordError }, 400)
 	}
 
-	const existing = db.query<{ id: number }, [string]>(
-		'SELECT id FROM users WHERE username = ?'
-	).get(username)
+	const existing = db.query<{ id: number }, [string]>('SELECT id FROM users WHERE username = ?').get(username)
 	if (existing) {
 		return c.json({ error: 'Username already exists' }, 400)
 	}
 
 	const passwordHash = await hashPassword(password)
-	const result = db.run(
-		'INSERT INTO users (username, password_hash) VALUES (?, ?)',
-		[username, passwordHash]
-	)
+	const result = db.run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash])
 
 	const sessionId = generateSessionId()
 	const expiresAt = Math.floor(Date.now() / 1000) + SESSION_DURATION
-	db.run(
-		'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)',
-		[sessionId, result.lastInsertRowid, expiresAt]
-	)
+	db.run('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)', [
+		sessionId,
+		result.lastInsertRowid,
+		expiresAt,
+	])
 
 	setCookie(c, 'session', sessionId, {
 		httpOnly: true,
@@ -82,9 +78,9 @@ auth.post('/login', async (c) => {
 	const body = await c.req.json<{ username: string; password: string }>()
 	const { username, password } = body
 
-	const user = db.query<User, [string]>(
-		'SELECT id, username, password_hash FROM users WHERE username = ?'
-	).get(username)
+	const user = db
+		.query<User, [string]>('SELECT id, username, password_hash FROM users WHERE username = ?')
+		.get(username)
 
 	if (!user || !(await verifyPassword(password, user.password_hash))) {
 		log.warn(`Login failed for user: ${username} from ${ip}`)
@@ -95,10 +91,7 @@ auth.post('/login', async (c) => {
 
 	const sessionId = generateSessionId()
 	const expiresAt = Math.floor(Date.now() / 1000) + SESSION_DURATION
-	db.run(
-		'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)',
-		[sessionId, user.id, expiresAt]
-	)
+	db.run('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)', [sessionId, user.id, expiresAt])
 
 	setCookie(c, 'session', sessionId, {
 		httpOnly: true,
@@ -134,9 +127,7 @@ auth.post('/password', authMiddleware, async (c) => {
 		return c.json({ error: passwordError }, 400)
 	}
 
-	const dbUser = db.query<User, [number]>(
-		'SELECT id, username, password_hash FROM users WHERE id = ?'
-	).get(user.id)
+	const dbUser = db.query<User, [number]>('SELECT id, username, password_hash FROM users WHERE id = ?').get(user.id)
 
 	if (!dbUser || !(await verifyPassword(body.currentPassword, dbUser.password_hash))) {
 		return c.json({ error: 'Current password is incorrect' }, 400)

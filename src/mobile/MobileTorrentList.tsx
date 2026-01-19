@@ -3,18 +3,39 @@ import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as api from '../api/qbittorrent'
 import type { Instance } from '../api/instances'
 import type { Torrent, TorrentState } from '../types/qbittorrent'
-import { formatSize, formatSpeed, formatDuration, formatEta, formatCompactSpeed, formatCompactSize, formatRelativeDate, normalizeSearch } from '../utils/format'
+import {
+	formatSize,
+	formatSpeed,
+	formatDuration,
+	formatEta,
+	formatCompactSpeed,
+	formatCompactSize,
+	formatRelativeDate,
+	normalizeSearch,
+} from '../utils/format'
 
 type TorrentWithInstance = Torrent & { instanceId: number; instanceLabel: string }
 
 type StatusFilter = 'all' | 'downloading' | 'seeding' | 'paused'
 type SortField = 'dlspeed' | 'upspeed' | 'ratio' | 'seeding_time' | 'added_on' | 'last_activity'
 
-const DOWNLOADING_STATES: TorrentState[] = ['downloading', 'metaDL', 'forcedDL', 'stalledDL', 'allocating', 'queuedDL', 'checkingDL']
+const DOWNLOADING_STATES: TorrentState[] = [
+	'downloading',
+	'metaDL',
+	'forcedDL',
+	'stalledDL',
+	'allocating',
+	'queuedDL',
+	'checkingDL',
+]
 const SEEDING_STATES: TorrentState[] = ['uploading', 'forcedUP', 'stalledUP', 'queuedUP', 'checkingUP']
 const PAUSED_STATES: TorrentState[] = ['pausedDL', 'pausedUP', 'stoppedDL', 'stoppedUP']
 
-function getStateInfo(state: TorrentState): { color: string; label: string; icon: 'download' | 'upload' | 'pause' | 'error' | 'check' } {
+function getStateInfo(state: TorrentState): {
+	color: string
+	label: string
+	icon: 'download' | 'upload' | 'pause' | 'error' | 'check'
+} {
 	if (DOWNLOADING_STATES.includes(state)) {
 		if (state === 'stalledDL') return { color: 'var(--warning)', label: 'Stalled', icon: 'download' }
 		if (state === 'queuedDL') return { color: 'var(--text-muted)', label: 'Queued', icon: 'download' }
@@ -32,7 +53,15 @@ function getStateInfo(state: TorrentState): { color: string; label: string; icon
 	return { color: 'var(--text-muted)', label: state, icon: 'pause' }
 }
 
-function MobileSelect<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
+function MobileSelect<T extends string>({
+	value,
+	options,
+	onChange,
+}: {
+	value: T
+	options: { value: T; label: string }[]
+	onChange: (v: T) => void
+}) {
 	const [open, setOpen] = useState(false)
 	const ref = useRef<HTMLDivElement>(null)
 
@@ -45,7 +74,7 @@ function MobileSelect<T extends string>({ value, options, onChange }: { value: T
 		return () => document.removeEventListener('mousedown', handleClickOutside)
 	}, [open])
 
-	const selected = options.find(o => o.value === value)
+	const selected = options.find((o) => o.value === value)
 
 	return (
 		<div ref={ref} className="relative flex-1">
@@ -56,7 +85,14 @@ function MobileSelect<T extends string>({ value, options, onChange }: { value: T
 				style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
 			>
 				<span className="truncate">{selected?.label}</span>
-				<svg className={`w-4 h-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-4 h-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+					style={{ color: 'var(--text-muted)' }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
@@ -69,11 +105,15 @@ function MobileSelect<T extends string>({ value, options, onChange }: { value: T
 						<button
 							key={o.value}
 							type="button"
-							onClick={() => { onChange(o.value); setOpen(false) }}
+							onClick={() => {
+								onChange(o.value)
+								setOpen(false)
+							}}
 							className="w-full px-3 py-2.5 text-left text-sm font-medium transition-colors active:bg-[var(--bg-tertiary)]"
 							style={{
 								color: value === o.value ? 'var(--accent)' : 'var(--text-primary)',
-								backgroundColor: value === o.value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
+								backgroundColor:
+									value === o.value ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
 							}}
 						>
 							{o.label}
@@ -89,32 +129,75 @@ function StateIcon({ type, color }: { type: 'download' | 'upload' | 'pause' | 'e
 	switch (type) {
 		case 'download':
 			return (
-				<svg className="w-4 h-4" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+				<svg
+					className="w-4 h-4"
+					style={{ color }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2.5}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
 				</svg>
 			)
 		case 'upload':
 			return (
-				<svg className="w-4 h-4" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+				<svg
+					className="w-4 h-4"
+					style={{ color }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2.5}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
 				</svg>
 			)
 		case 'pause':
 			return (
-				<svg className="w-4 h-4" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+				<svg
+					className="w-4 h-4"
+					style={{ color }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2.5}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
 				</svg>
 			)
 		case 'error':
 			return (
-				<svg className="w-4 h-4" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+				<svg
+					className="w-4 h-4"
+					style={{ color }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2.5}
+				>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+					/>
 				</svg>
 			)
 		case 'check':
 			return (
-				<svg className="w-4 h-4 animate-spin" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-					<path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+				<svg
+					className="w-4 h-4 animate-spin"
+					style={{ color }}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2.5}
+				>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+					/>
 				</svg>
 			)
 	}
@@ -151,18 +234,18 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 	const queryClient = useQueryClient()
 
 	const torrentQueries = useQueries({
-		queries: instances.map(instance => ({
+		queries: instances.map((instance) => ({
 			queryKey: ['torrents', instance.id],
 			queryFn: () => api.getTorrents(instance.id),
 			refetchInterval: 2000,
 		})),
 	})
 
-	const isLoading = torrentQueries.some(q => q.isLoading)
+	const isLoading = torrentQueries.some((q) => q.isLoading)
 
 	const torrents: TorrentWithInstance[] = useMemo(() => {
 		return torrentQueries.flatMap((q, i) =>
-			(q.data || []).map(t => ({
+			(q.data || []).map((t) => ({
 				...t,
 				instanceId: instances[i].id,
 				instanceLabel: instances[i].label,
@@ -186,17 +269,17 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 		let result = torrents
 		if (search) {
 			const q = normalizeSearch(search)
-			result = result.filter(t => normalizeSearch(t.name).includes(q))
+			result = result.filter((t) => normalizeSearch(t.name).includes(q))
 		}
 		switch (status) {
 			case 'downloading':
-				result = result.filter(t => DOWNLOADING_STATES.includes(t.state))
+				result = result.filter((t) => DOWNLOADING_STATES.includes(t.state))
 				break
 			case 'seeding':
-				result = result.filter(t => SEEDING_STATES.includes(t.state))
+				result = result.filter((t) => SEEDING_STATES.includes(t.state))
 				break
 			case 'paused':
-				result = result.filter(t => PAUSED_STATES.includes(t.state))
+				result = result.filter((t) => PAUSED_STATES.includes(t.state))
 				break
 		}
 		return [...result].sort((a, b) => b[sortBy] - a[sortBy])
@@ -228,11 +311,19 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 					>
 						{compact ? (
 							<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+								/>
 							</svg>
 						) : (
 							<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+								/>
 							</svg>
 						)}
 					</button>
@@ -241,17 +332,32 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 
 			{isLoading ? (
 				<div className="py-12 text-center">
-					<div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading torrents...</div>
+					<div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+						Loading torrents...
+					</div>
 				</div>
 			) : filteredTorrents.length === 0 ? (
 				<div
 					className="py-12 text-center rounded-2xl border"
 					style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
 				>
-					<svg className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)', opacity: 0.5 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+					<svg
+						className="w-12 h-12 mx-auto mb-3"
+						style={{ color: 'var(--text-muted)', opacity: 0.5 }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={1}
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+						/>
 					</svg>
-					<div className="text-sm" style={{ color: 'var(--text-muted)' }}>No torrents found</div>
+					<div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+						No torrents found
+					</div>
 				</div>
 			) : (
 				<div className={compact ? 'space-y-1' : 'space-y-2'}>
@@ -259,7 +365,12 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 						const stateInfo = getStateInfo(torrent.state)
 						const isPaused = PAUSED_STATES.includes(torrent.state)
 						const isSwiped = swipedHash === torrent.hash
-						const speed = torrent.dlspeed > 0 ? formatSpeed(torrent.dlspeed) : torrent.upspeed > 0 ? formatSpeed(torrent.upspeed) : ''
+						const speed =
+							torrent.dlspeed > 0
+								? formatSpeed(torrent.dlspeed)
+								: torrent.upspeed > 0
+									? formatSpeed(torrent.upspeed)
+									: ''
 						const progress = Math.round(torrent.progress * 100)
 
 						if (compact) {
@@ -291,7 +402,9 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 										{speed && (
 											<>
 												<span style={{ opacity: 0.4 }}>•</span>
-												<span className="tabular-nums" style={{ color: stateInfo.color }}>{speed}</span>
+												<span className="tabular-nums" style={{ color: stateInfo.color }}>
+													{speed}
+												</span>
 											</>
 										)}
 										{torrent.eta > 0 && torrent.eta < 8640000 && (
@@ -301,19 +414,43 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 											</>
 										)}
 									</div>
-									<div className="h-1 rounded-full overflow-hidden mb-1.5" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+									<div
+										className="h-1 rounded-full overflow-hidden mb-1.5"
+										style={{ backgroundColor: 'var(--bg-tertiary)' }}
+									>
 										<div
 											className="h-full rounded-full"
 											style={{ width: `${progress}%`, backgroundColor: stateInfo.color }}
 										/>
 									</div>
-									<div className="flex items-center gap-3 text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
-										<span><span style={{ opacity: 0.5 }}>↓</span>{formatCompactSize(torrent.downloaded)}</span>
-										<span><span style={{ opacity: 0.5 }}>↑</span>{formatCompactSize(torrent.uploaded)}</span>
-										<span><span style={{ opacity: 0.5, color: 'var(--accent)' }}>▼</span>{formatCompactSpeed(torrent.dlspeed)}/s</span>
-										<span><span style={{ opacity: 0.5, color: '#a6e3a1' }}>▲</span>{formatCompactSpeed(torrent.upspeed)}/s</span>
-										<span className="ml-auto"><span style={{ opacity: 0.5 }}>⏱</span>{formatDuration(torrent.seeding_time)}</span>
-										<span><span style={{ opacity: 0.5 }}>+</span>{formatRelativeDate(torrent.added_on)}</span>
+									<div
+										className="flex items-center gap-3 text-[10px] tabular-nums"
+										style={{ color: 'var(--text-muted)' }}
+									>
+										<span>
+											<span style={{ opacity: 0.5 }}>↓</span>
+											{formatCompactSize(torrent.downloaded)}
+										</span>
+										<span>
+											<span style={{ opacity: 0.5 }}>↑</span>
+											{formatCompactSize(torrent.uploaded)}
+										</span>
+										<span>
+											<span style={{ opacity: 0.5, color: 'var(--accent)' }}>▼</span>
+											{formatCompactSpeed(torrent.dlspeed)}/s
+										</span>
+										<span>
+											<span style={{ opacity: 0.5, color: '#a6e3a1' }}>▲</span>
+											{formatCompactSpeed(torrent.upspeed)}/s
+										</span>
+										<span className="ml-auto">
+											<span style={{ opacity: 0.5 }}>⏱</span>
+											{formatDuration(torrent.seeding_time)}
+										</span>
+										<span>
+											<span style={{ opacity: 0.5 }}>+</span>
+											{formatRelativeDate(torrent.added_on)}
+										</span>
 									</div>
 								</button>
 							)
@@ -328,16 +465,31 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 										transform: isSwiped ? 'translateX(0)' : 'translateX(100%)',
 									}}
 								>
-									<button
-										onClick={(e) => handleToggle(torrent, e)}
-										className="p-2"
-									>
+									<button onClick={(e) => handleToggle(torrent, e)} className="p-2">
 										{isPaused ? (
-											<svg className="w-6 h-6" style={{ color: 'var(--accent-contrast)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-												<path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+											<svg
+												className="w-6 h-6"
+												style={{ color: 'var(--accent-contrast)' }}
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+												strokeWidth={2}
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
+												/>
 											</svg>
 										) : (
-											<svg className="w-6 h-6" style={{ color: '#000' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+											<svg
+												className="w-6 h-6"
+												style={{ color: '#000' }}
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+												strokeWidth={2}
+											>
 												<path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
 											</svg>
 										)}
@@ -373,23 +525,43 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 												{torrent.name}
 											</div>
 											<div className="flex items-center gap-2 mt-1.5 flex-wrap">
-												<span className="text-xs" style={{ color: stateInfo.color }}>{stateInfo.label}</span>
+												<span className="text-xs" style={{ color: stateInfo.color }}>
+													{stateInfo.label}
+												</span>
 												{showInstanceLabel && (
 													<>
-														<span className="text-xs" style={{ color: 'var(--text-muted)' }}>•</span>
-														<span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>{torrent.instanceLabel}</span>
+														<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+															•
+														</span>
+														<span
+															className="text-xs px-1.5 py-0.5 rounded"
+															style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+														>
+															{torrent.instanceLabel}
+														</span>
 													</>
 												)}
-												<span className="text-xs" style={{ color: 'var(--text-muted)' }}>•</span>
-												<span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatSize(torrent.size)}</span>
+												<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+													•
+												</span>
+												<span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
+													{formatSize(torrent.size)}
+												</span>
 												{speed && (
 													<>
-														<span className="text-xs" style={{ color: 'var(--text-muted)' }}>•</span>
-														<span className="text-xs tabular-nums" style={{ color: stateInfo.color }}>{speed}</span>
+														<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+															•
+														</span>
+														<span className="text-xs tabular-nums" style={{ color: stateInfo.color }}>
+															{speed}
+														</span>
 													</>
 												)}
 											</div>
-											<div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+											<div
+												className="mt-2 h-1.5 rounded-full overflow-hidden"
+												style={{ backgroundColor: 'var(--bg-tertiary)' }}
+											>
 												<div
 													className="h-full rounded-full transition-all duration-300"
 													style={{
@@ -414,28 +586,52 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 												style={{ borderTop: '1px solid var(--border)' }}
 											>
 												<div className="flex items-center gap-1.5">
-													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>↓</span>
-													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatCompactSize(torrent.downloaded)}</span>
+													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>
+														↓
+													</span>
+													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatCompactSize(torrent.downloaded)}
+													</span>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>↑</span>
-													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatCompactSize(torrent.uploaded)}</span>
+													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>
+														↑
+													</span>
+													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatCompactSize(torrent.uploaded)}
+													</span>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<span className="text-[10px] opacity-50" style={{ color: 'var(--accent)' }}>▼</span>
-													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatCompactSpeed(torrent.dlspeed)}/s</span>
+													<span className="text-[10px] opacity-50" style={{ color: 'var(--accent)' }}>
+														▼
+													</span>
+													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatCompactSpeed(torrent.dlspeed)}/s
+													</span>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<span className="text-[10px] opacity-50" style={{ color: '#a6e3a1' }}>▲</span>
-													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatCompactSpeed(torrent.upspeed)}/s</span>
+													<span className="text-[10px] opacity-50" style={{ color: '#a6e3a1' }}>
+														▲
+													</span>
+													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatCompactSpeed(torrent.upspeed)}/s
+													</span>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>⏱</span>
-													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatDuration(torrent.seeding_time)}</span>
+													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>
+														⏱
+													</span>
+													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatDuration(torrent.seeding_time)}
+													</span>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>+</span>
-													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{formatRelativeDate(torrent.added_on)}</span>
+													<span className="text-[10px] opacity-50" style={{ color: 'var(--text-muted)' }}>
+														+
+													</span>
+													<span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+														{formatRelativeDate(torrent.added_on)}
+													</span>
 												</div>
 											</div>
 										</div>
@@ -449,4 +645,3 @@ export function MobileTorrentList({ instances, search, compact, onToggleCompact,
 		</div>
 	)
 }
-

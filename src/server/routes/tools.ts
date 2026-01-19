@@ -45,9 +45,7 @@ async function qbtRequest<T>(instance: Instance, cookie: string | null, endpoint
 
 tools.post('/orphans/scan', async (c) => {
 	const user = c.get('user')
-	const instances = db.query<Instance, [number]>(
-		'SELECT * FROM instances WHERE user_id = ?'
-	).all(user.id)
+	const instances = db.query<Instance, [number]>('SELECT * FROM instances WHERE user_id = ?').all(user.id)
 
 	log.info(`[Orphan Scan] Starting scan for user ${user.username} across ${instances.length} instance(s)`)
 
@@ -73,7 +71,7 @@ tools.post('/orphans/scan', async (c) => {
 		totalTorrents += torrents.length
 		log.info(`[Orphan Scan] ${instance.label}: Found ${torrents.length} torrents`)
 
-		const missingFiles = torrents.filter(t => t.state === 'missingFiles')
+		const missingFiles = torrents.filter((t) => t.state === 'missingFiles')
 		for (const t of missingFiles) {
 			log.info(`[Orphan Scan] ${instance.label}: Missing files - ${t.name}`)
 			orphans.push({
@@ -86,14 +84,14 @@ tools.post('/orphans/scan', async (c) => {
 			})
 		}
 
-		const toCheck = torrents.filter(t => t.state !== 'missingFiles')
+		const toCheck = torrents.filter((t) => t.state !== 'missingFiles')
 		for (const t of toCheck) {
 			totalChecked++
 			const trackers = await qbtRequest<Tracker[]>(instance, loginResult.cookie, `/torrents/trackers?hash=${t.hash}`)
 			if (!trackers) continue
 
-			const unregistered = trackers.find(tr =>
-				tr.msg && /unregistered|not registered|torrent not found/i.test(tr.msg)
+			const unregistered = trackers.find(
+				(tr) => tr.msg && /unregistered|not registered|torrent not found/i.test(tr.msg)
 			)
 			if (unregistered) {
 				log.info(`[Orphan Scan] ${instance.label}: Unregistered - ${t.name} (${unregistered.msg})`)

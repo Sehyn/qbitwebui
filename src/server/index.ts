@@ -19,16 +19,21 @@ const banner = `
 `
 const app = new Hono()
 
-app.use('*', cors({
-	origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-	credentials: true,
-}))
+app.use(
+	'*',
+	cors({
+		origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+		credentials: true,
+	})
+)
 
-app.get('/api/config', (c) => c.json({
-	authDisabled: AUTH_DISABLED,
-	registrationDisabled: REGISTRATION_DISABLED,
-	filesEnabled: !!process.env.DOWNLOADS_PATH,
-}))
+app.get('/api/config', (c) =>
+	c.json({
+		authDisabled: AUTH_DISABLED,
+		registrationDisabled: REGISTRATION_DISABLED,
+		filesEnabled: !!process.env.DOWNLOADS_PATH,
+	})
+)
 
 app.route('/api/auth', auth)
 app.route('/api/instances', instances)

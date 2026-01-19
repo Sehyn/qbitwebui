@@ -9,9 +9,5 @@ interface Props {
 
 export function InstanceProvider({ instance, children }: Props) {
 	const value = useMemo(() => ({ instance }), [instance])
-	return (
-		<InstanceContext.Provider value={value}>
-			{children}
-		</InstanceContext.Provider>
-	)
+	return <InstanceContext.Provider value={value}>{children}</InstanceContext.Provider>
 }

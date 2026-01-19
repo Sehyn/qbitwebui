@@ -9,15 +9,17 @@ interface QbtInstance {
 	skip_auth: number
 }
 
-export type QbtLoginResult = {
-	success: true
-	cookie: string | null
-	version?: string
-} | {
-	success: false
-	error: string
-	status?: number
-}
+export type QbtLoginResult =
+	| {
+			success: true
+			cookie: string | null
+			version?: string
+	  }
+	| {
+			success: false
+			error: string
+			status?: number
+	  }
 
 export async function loginToQbt(instance: QbtInstance): Promise<QbtLoginResult> {
 	if (instance.skip_auth) {
@@ -60,7 +62,12 @@ export async function loginToQbt(instance: QbtInstance): Promise<QbtLoginResult>
 	}
 }
 
-export async function testQbtConnection(url: string, username?: string, password?: string, skipAuth?: boolean): Promise<QbtLoginResult> {
+export async function testQbtConnection(
+	url: string,
+	username?: string,
+	password?: string,
+	skipAuth?: boolean
+): Promise<QbtLoginResult> {
 	try {
 		let cookie: string | null = null
 
@@ -118,7 +125,10 @@ export async function testStoredQbtInstance(instance: QbtInstance): Promise<QbtL
 		})
 
 		if (!versionRes.ok) {
-			return { success: false, error: instance.skip_auth ? 'Connection failed - is IP bypass enabled?' : 'Failed to get version' }
+			return {
+				success: false,
+				error: instance.skip_auth ? 'Connection failed - is IP bypass enabled?' : 'Failed to get version',
+			}
 		}
 
 		const version = await versionRes.text()

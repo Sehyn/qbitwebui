@@ -4,7 +4,7 @@ import { ThemeContext } from './ThemeContext'
 
 const STORAGE_KEY = 'qbitwebui-theme'
 
-function applyTheme(colors: typeof themes[0]['colors']) {
+function applyTheme(colors: (typeof themes)[0]['colors']) {
 	const root = document.documentElement
 	root.style.setProperty('--bg-primary', colors.bgPrimary)
 	root.style.setProperty('--bg-secondary', colors.bgSecondary)
@@ -36,9 +36,5 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 		localStorage.setItem(STORAGE_KEY, id)
 	}
 
-	return (
-		<ThemeContext.Provider value={{ theme, setTheme, themes }}>
-			{children}
-		</ThemeContext.Provider>
-	)
+	return <ThemeContext.Provider value={{ theme, setTheme, themes }}>{children}</ThemeContext.Provider>
 }

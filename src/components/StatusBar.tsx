@@ -32,7 +32,13 @@ function PerPageDropdown({ value, onChange }: { value: number; onChange: (v: num
 				style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg-tertiary)' }}
 			>
 				<span>{value}</span>
-				<svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+				<svg
+					className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
@@ -44,7 +50,10 @@ function PerPageDropdown({ value, onChange }: { value: number; onChange: (v: num
 					{PER_PAGE_OPTIONS.map((n) => (
 						<button
 							key={n}
-							onClick={() => { onChange(n); setOpen(false) }}
+							onClick={() => {
+								onChange(n)
+								setOpen(false)
+							}}
 							className="w-full px-3 py-1.5 text-xs text-left transition-colors"
 							style={{
 								color: value === n ? 'var(--accent)' : 'var(--text-muted)',
@@ -72,14 +81,19 @@ function useAltSpeedMode(instanceId: number) {
 		}
 		checkMode()
 		const interval = setInterval(checkMode, 2000)
-		return () => { mounted = false; clearInterval(interval) }
+		return () => {
+			mounted = false
+			clearInterval(interval)
+		}
 	}, [instanceId])
 
 	const toggle = useCallback(async () => {
 		if (toggling) return
 		setToggling(true)
-		const ok = await toggleSpeedLimitsMode(instanceId).then(() => true).catch(() => false)
-		if (ok) setEnabled(prev => !prev)
+		const ok = await toggleSpeedLimitsMode(instanceId)
+			.then(() => true)
+			.catch(() => false)
+		if (ok) setEnabled((prev) => !prev)
 		setToggling(false)
 	}, [instanceId, toggling])
 
@@ -109,20 +123,47 @@ export function StatusBar() {
 	const endItem = Math.min(page * perPage, totalItems)
 
 	return (
-		<div className="relative grid grid-cols-3 items-center px-6 py-3 backdrop-blur-md border-t" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-secondary) 80%, transparent)', borderColor: 'var(--border)' }}>
-			<div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--accent) 1%, transparent), transparent)' }} />
+		<div
+			className="relative grid grid-cols-3 items-center px-6 py-3 backdrop-blur-md border-t"
+			style={{
+				backgroundColor: 'color-mix(in srgb, var(--bg-secondary) 80%, transparent)',
+				borderColor: 'var(--border)',
+			}}
+		>
+			<div
+				className="absolute inset-0"
+				style={{
+					background:
+						'linear-gradient(to right, transparent, color-mix(in srgb, var(--accent) 1%, transparent), transparent)',
+				}}
+			/>
 
 			<div className="relative flex items-center gap-6">
 				<div className="flex items-center gap-2.5">
-					<div className="w-2 h-2 rounded-full shadow-lg" style={{ backgroundColor: statusColors[statusConfig.type], boxShadow: `0 0 10px ${statusColors[statusConfig.type]}50` }} />
-					<span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{statusConfig.label}</span>
+					<div
+						className="w-2 h-2 rounded-full shadow-lg"
+						style={{
+							backgroundColor: statusColors[statusConfig.type],
+							boxShadow: `0 0 10px ${statusColors[statusConfig.type]}50`,
+						}}
+					/>
+					<span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+						{statusConfig.label}
+					</span>
 				</div>
 
 				<div className="h-4 w-px" style={{ backgroundColor: 'var(--border)' }} />
 
 				<div className="flex items-center gap-4">
 					<div className="flex items-center gap-2">
-						<svg className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+						<svg
+							className="w-3.5 h-3.5"
+							style={{ color: 'var(--accent)' }}
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+						>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
 						</svg>
 						<span className="text-xs font-mono font-medium" style={{ color: 'var(--accent)' }}>
@@ -131,7 +172,10 @@ export function StatusBar() {
 						{(data?.dl_rate_limit ?? 0) > 0 && (
 							<span
 								className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-								style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', color: 'var(--accent)' }}
+								style={{
+									backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+									color: 'var(--accent)',
+								}}
 								title={`Download limit: ${formatSpeed(data?.dl_rate_limit ?? 0)}`}
 							>
 								{formatLimit(data?.dl_rate_limit ?? 0)}
@@ -139,7 +183,14 @@ export function StatusBar() {
 						)}
 					</div>
 					<div className="flex items-center gap-2">
-						<svg className="w-3.5 h-3.5" style={{ color: 'var(--warning)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+						<svg
+							className="w-3.5 h-3.5"
+							style={{ color: 'var(--warning)' }}
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+						>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
 						</svg>
 						<span className="text-xs font-mono font-medium" style={{ color: 'var(--warning)' }}>
@@ -148,7 +199,10 @@ export function StatusBar() {
 						{(data?.up_rate_limit ?? 0) > 0 && (
 							<span
 								className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-								style={{ backgroundColor: 'color-mix(in srgb, var(--warning) 20%, transparent)', color: 'var(--warning)' }}
+								style={{
+									backgroundColor: 'color-mix(in srgb, var(--warning) 20%, transparent)',
+									color: 'var(--warning)',
+								}}
 								title={`Upload limit: ${formatSpeed(data?.up_rate_limit ?? 0)}`}
 							>
 								{formatLimit(data?.up_rate_limit ?? 0)}
@@ -164,14 +218,24 @@ export function StatusBar() {
 					disabled={altSpeed.toggling}
 					className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-all"
 					style={{
-						backgroundColor: altSpeed.enabled ? 'color-mix(in srgb, var(--accent) 20%, transparent)' : 'var(--bg-tertiary)',
+						backgroundColor: altSpeed.enabled
+							? 'color-mix(in srgb, var(--accent) 20%, transparent)'
+							: 'var(--bg-tertiary)',
 						color: altSpeed.enabled ? 'var(--accent)' : 'var(--text-muted)',
 						opacity: altSpeed.toggling ? 0.5 : 1,
 					}}
-					title={altSpeed.enabled ? 'Alternative speed limits active (click to disable)' : 'Click to enable alternative speed limits'}
+					title={
+						altSpeed.enabled
+							? 'Alternative speed limits active (click to disable)'
+							: 'Click to enable alternative speed limits'
+					}
 				>
 					<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+						/>
 					</svg>
 					<span>Alt</span>
 				</button>
@@ -186,7 +250,11 @@ export function StatusBar() {
 						style={{ color: 'var(--text-muted)' }}
 					>
 						<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5"
+							/>
 						</svg>
 					</button>
 					<button
@@ -229,15 +297,33 @@ export function StatusBar() {
 			</div>
 
 			<div className="relative flex items-center justify-end gap-4">
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}>
-					<span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Total</span>
-					<span className="text-xs font-mono" style={{ color: 'var(--accent)' }}>{formatSize(syncData?.server_state.alltime_dl ?? 0)}</span>
-					<span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>/</span>
-					<span className="text-xs font-mono" style={{ color: 'var(--warning)' }}>{formatSize(syncData?.server_state.alltime_ul ?? 0)}</span>
+				<div
+					className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
+				>
+					<span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+						Total
+					</span>
+					<span className="text-xs font-mono" style={{ color: 'var(--accent)' }}>
+						{formatSize(syncData?.server_state.alltime_dl ?? 0)}
+					</span>
+					<span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+						/
+					</span>
+					<span className="text-xs font-mono" style={{ color: 'var(--warning)' }}>
+						{formatSize(syncData?.server_state.alltime_ul ?? 0)}
+					</span>
 				</div>
-				<div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border" style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}>
-					<span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>DHT</span>
-					<span className="text-xs font-mono font-medium" style={{ color: 'var(--text-secondary)' }}>{data?.dht_nodes ?? 0}</span>
+				<div
+					className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+					style={{ backgroundColor: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
+				>
+					<span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+						DHT
+					</span>
+					<span className="text-xs font-mono font-medium" style={{ color: 'var(--text-secondary)' }}>
+						{data?.dht_nodes ?? 0}
+					</span>
 				</div>
 			</div>
 		</div>

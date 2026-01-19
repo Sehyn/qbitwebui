@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap');
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
 	--bg-primary: #07070a;
@@ -67,8 +67,13 @@ body {
 }
 
 @keyframes pulse-glow {
-	0%, 100% { opacity: 0.6; }
-	50% { opacity: 1; }
+	0%,
+	100% {
+		opacity: 0.6;
+	}
+	50% {
+		opacity: 1;
+	}
 }
 
 .downloading .progress-glow::after {
@@ -76,8 +81,14 @@ body {
 }
 
 @keyframes fadeIn {
-	from { opacity: 0; transform: translateY(8px); }
-	to { opacity: 1; transform: translateY(0); }
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .animate-in {
@@ -90,11 +101,11 @@ input:focus {
 
 button,
 select,
-[role="button"],
-input[type="button"],
-input[type="submit"],
-input[type="checkbox"],
-input[type="radio"],
+[role='button'],
+input[type='button'],
+input[type='submit'],
+input[type='checkbox'],
+input[type='radio'],
 label {
 	cursor: pointer;
 }

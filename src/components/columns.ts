@@ -1,4 +1,24 @@
-export type SortKey = 'name' | 'size' | 'progress' | 'downloaded' | 'uploaded' | 'dlspeed' | 'upspeed' | 'ratio' | 'state' | 'category' | 'tags' | 'num_seeds' | 'num_leechs' | 'last_activity' | 'save_path' | 'tracker' | 'seeding_time' | 'added_on' | 'completion_on' | 'eta'
+export type SortKey =
+	| 'name'
+	| 'size'
+	| 'progress'
+	| 'downloaded'
+	| 'uploaded'
+	| 'dlspeed'
+	| 'upspeed'
+	| 'ratio'
+	| 'state'
+	| 'category'
+	| 'tags'
+	| 'num_seeds'
+	| 'num_leechs'
+	| 'last_activity'
+	| 'save_path'
+	| 'tracker'
+	| 'seeding_time'
+	| 'added_on'
+	| 'completion_on'
+	| 'eta'
 
 export interface ColumnDef {
 	id: string
@@ -28,6 +48,16 @@ export const COLUMNS: ColumnDef[] = [
 	{ id: 'tracker', label: 'Tracker', sortKey: 'tracker' },
 ]
 
-export const DEFAULT_VISIBLE_COLUMNS = new Set(['progress', 'status', 'downloaded', 'uploaded', 'dlspeed', 'upspeed', 'ratio', 'seeding_time', 'added_on'])
+export const DEFAULT_VISIBLE_COLUMNS = new Set([
+	'progress',
+	'status',
+	'downloaded',
+	'uploaded',
+	'dlspeed',
+	'upspeed',
+	'ratio',
+	'seeding_time',
+	'added_on',
+])
 
-export const DEFAULT_COLUMN_ORDER = COLUMNS.map(c => c.id)
+export const DEFAULT_COLUMN_ORDER = COLUMNS.map((c) => c.id)

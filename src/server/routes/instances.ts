@@ -33,9 +33,9 @@ function toResponse(i: Instance): InstanceResponse {
 
 instances.get('/', (c) => {
 	const user = c.get('user')
-	const list = db.query<Instance, [number]>(
-		'SELECT * FROM instances WHERE user_id = ? ORDER BY created_at'
-	).all(user.id)
+	const list = db
+		.query<Instance, [number]>('SELECT * FROM instances WHERE user_id = ? ORDER BY created_at')
+		.all(user.id)
 	return c.json(list.map(toResponse))
 })
 
@@ -109,9 +109,9 @@ async function fetchInstanceStats(instance: Instance): Promise<InstanceStats> {
 			return base
 		}
 
-		const torrents = await torrentsRes.json() as TorrentInfo[]
-		const transfer = await transferRes.json() as TransferInfo
-		const sync = await syncRes.json() as SyncMaindata
+		const torrents = (await torrentsRes.json()) as TorrentInfo[]
+		const transfer = (await transferRes.json()) as TransferInfo
+		const sync = (await syncRes.json()) as SyncMaindata
 
 		base.online = true
 		base.total = torrents.length
@@ -141,9 +141,9 @@ async function fetchInstanceStats(instance: Instance): Promise<InstanceStats> {
 
 instances.get('/stats', async (c) => {
 	const user = c.get('user')
-	const list = db.query<Instance, [number]>(
-		'SELECT * FROM instances WHERE user_id = ? ORDER BY created_at'
-	).all(user.id)
+	const list = db
+		.query<Instance, [number]>('SELECT * FROM instances WHERE user_id = ? ORDER BY created_at')
+		.all(user.id)
 
 	const stats = await Promise.all(list.map(fetchInstanceStats))
 	return c.json(stats)
@@ -182,9 +182,9 @@ instances.post('/', async (c) => {
 			[user.id, body.label, body.url, body.qbt_username || null, encrypted, body.skip_auth ? 1 : 0]
 		)
 
-		const instance = db.query<Instance, [number]>(
-			'SELECT * FROM instances WHERE id = ?'
-		).get(Number(result.lastInsertRowid))
+		const instance = db
+			.query<Instance, [number]>('SELECT * FROM instances WHERE id = ?')
+			.get(Number(result.lastInsertRowid))
 
 		if (!instance) {
 			return c.json({ error: 'Failed to create instance' }, 500)
@@ -210,9 +210,9 @@ instances.put('/:id', async (c) => {
 		skip_auth?: boolean
 	}>()
 
-	const existing = db.query<Instance, [number, number]>(
-		'SELECT * FROM instances WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const existing = db
+		.query<Instance, [number, number]>('SELECT * FROM instances WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!existing) {
 		return c.json({ error: 'Instance not found' }, 404)
@@ -252,9 +252,7 @@ instances.put('/:id', async (c) => {
 		db.run(`UPDATE instances SET ${updates.join(', ')} WHERE id = ?`, values)
 	}
 
-	const updated = db.query<Instance, [number]>(
-		'SELECT * FROM instances WHERE id = ?'
-	).get(id)
+	const updated = db.query<Instance, [number]>('SELECT * FROM instances WHERE id = ?').get(id)
 
 	if (!updated) {
 		return c.json({ error: 'Failed to update instance' }, 500)
@@ -267,9 +265,9 @@ instances.post('/:id/test', async (c) => {
 	const user = c.get('user')
 	const id = Number(c.req.param('id'))
 
-	const instance = db.query<Instance, [number, number]>(
-		'SELECT * FROM instances WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const instance = db
+		.query<Instance, [number, number]>('SELECT * FROM instances WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!instance) {
 		return c.json({ error: 'Instance not found' }, 404)
@@ -319,9 +317,9 @@ instances.delete('/:id', (c) => {
 	const user = c.get('user')
 	const id = Number(c.req.param('id'))
 
-	const existing = db.query<Instance, [number, number]>(
-		'SELECT * FROM instances WHERE id = ? AND user_id = ?'
-	).get(id, user.id)
+	const existing = db
+		.query<Instance, [number, number]>('SELECT * FROM instances WHERE id = ? AND user_id = ?')
+		.get(id, user.id)
 
 	if (!existing) {
 		return c.json({ error: 'Instance not found' }, 404)

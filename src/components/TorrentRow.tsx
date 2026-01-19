@@ -55,12 +55,24 @@ function renderCell(columnId: string, torrent: Torrent, ctx: CellContext): React
 		case 'progress':
 			return ctx.isComplete ? (
 				<div className="flex items-center gap-2">
-					<div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}>
-						<svg className="w-3 h-3" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+					<div
+						className="w-5 h-5 rounded-full flex items-center justify-center"
+						style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}
+					>
+						<svg
+							className="w-3 h-3"
+							style={{ color: 'var(--accent)' }}
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={3}
+						>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 						</svg>
 					</div>
-					<span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Complete</span>
+					<span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+						Complete
+					</span>
 				</div>
 			) : (
 				<div className="group/progress relative flex items-center gap-2">
@@ -70,10 +82,19 @@ function renderCell(columnId: string, torrent: Torrent, ctx: CellContext): React
 							style={{ width: `${ctx.progress}%`, backgroundColor: 'var(--progress)' }}
 						/>
 					</div>
-					<span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{ctx.progress}%</span>
+					<span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+						{ctx.progress}%
+					</span>
 					{torrent.eta > 0 && torrent.eta < 8640000 && (
 						<div className="absolute left-0 -top-8 opacity-0 group-hover/progress:opacity-100 transition-opacity pointer-events-none z-50">
-							<div className="px-2 py-1 rounded text-xs font-mono whitespace-nowrap" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+							<div
+								className="px-2 py-1 rounded text-xs font-mono whitespace-nowrap"
+								style={{
+									backgroundColor: 'var(--bg-secondary)',
+									border: '1px solid var(--border)',
+									color: 'var(--text-primary)',
+								}}
+							>
 								ETA: {formatEta(torrent.eta)}
 							</div>
 						</div>
@@ -81,7 +102,11 @@ function renderCell(columnId: string, torrent: Torrent, ctx: CellContext): React
 				</div>
 			)
 		case 'eta':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{torrent.eta > 0 && torrent.eta < 8640000 ? formatEta(torrent.eta) : '—'}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{torrent.eta > 0 && torrent.eta < 8640000 ? formatEta(torrent.eta) : '—'}
+				</span>
+			)
 		case 'status':
 			return (
 				<span
@@ -93,25 +118,65 @@ function renderCell(columnId: string, torrent: Torrent, ctx: CellContext): React
 				</span>
 			)
 		case 'size':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatSize(torrent.size)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatSize(torrent.size)}
+				</span>
+			)
 		case 'downloaded':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatSize(torrent.downloaded)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatSize(torrent.downloaded)}
+				</span>
+			)
 		case 'uploaded':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatSize(torrent.uploaded)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatSize(torrent.uploaded)}
+				</span>
+			)
 		case 'dlspeed':
-			return <span className="text-xs font-mono font-medium whitespace-nowrap" style={{ color: 'var(--accent)' }}>{formatSpeed(torrent.dlspeed, false)}</span>
+			return (
+				<span className="text-xs font-mono font-medium whitespace-nowrap" style={{ color: 'var(--accent)' }}>
+					{formatSpeed(torrent.dlspeed, false)}
+				</span>
+			)
 		case 'upspeed':
-			return <span className="text-xs font-mono font-medium whitespace-nowrap" style={{ color: 'var(--warning)' }}>{formatSpeed(torrent.upspeed, false)}</span>
+			return (
+				<span className="text-xs font-mono font-medium whitespace-nowrap" style={{ color: 'var(--warning)' }}>
+					{formatSpeed(torrent.upspeed, false)}
+				</span>
+			)
 		case 'ratio':
-			return <span className="text-xs font-mono font-medium whitespace-nowrap" style={{ color: ctx.ratioColor }}>{torrent.ratio.toFixed(2)}</span>
+			return (
+				<span className="text-xs font-mono font-medium whitespace-nowrap" style={{ color: ctx.ratioColor }}>
+					{torrent.ratio.toFixed(2)}
+				</span>
+			)
 		case 'seeding_time':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatDuration(torrent.seeding_time)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatDuration(torrent.seeding_time)}
+				</span>
+			)
 		case 'added_on':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatDate(torrent.added_on)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatDate(torrent.added_on)}
+				</span>
+			)
 		case 'completion_on':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatDate(torrent.completion_on)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatDate(torrent.completion_on)}
+				</span>
+			)
 		case 'category':
-			return <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{torrent.category || '—'}</span>
+			return (
+				<span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+					{torrent.category || '—'}
+				</span>
+			)
 		case 'tags':
 			return torrent.tags ? (
 				<div className="flex flex-wrap gap-1 max-w-[200px]">
@@ -121,17 +186,47 @@ function renderCell(columnId: string, torrent: Torrent, ctx: CellContext): React
 						</span>
 					))}
 				</div>
-			) : <span className="text-xs text-gray-500">—</span>
+			) : (
+				<span className="text-xs text-gray-500">—</span>
+			)
 		case 'num_seeds':
-			return <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{torrent.num_seeds}</span>
+			return (
+				<span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+					{torrent.num_seeds}
+				</span>
+			)
 		case 'num_leechs':
-			return <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{torrent.num_leechs}</span>
+			return (
+				<span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+					{torrent.num_leechs}
+				</span>
+			)
 		case 'last_activity':
-			return <span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatRelativeTime(torrent.last_activity)}</span>
+			return (
+				<span className="text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+					{formatRelativeTime(torrent.last_activity)}
+				</span>
+			)
 		case 'save_path':
-			return <span className="text-xs font-mono truncate max-w-[150px] block" title={torrent.save_path} style={{ color: 'var(--text-muted)' }}>{torrent.save_path}</span>
+			return (
+				<span
+					className="text-xs font-mono truncate max-w-[150px] block"
+					title={torrent.save_path}
+					style={{ color: 'var(--text-muted)' }}
+				>
+					{torrent.save_path}
+				</span>
+			)
 		case 'tracker':
-			return <span className="text-xs font-mono truncate max-w-[150px] block" title={torrent.tracker} style={{ color: 'var(--text-muted)' }}>{torrent.tracker}</span>
+			return (
+				<span
+					className="text-xs font-mono truncate max-w-[150px] block"
+					title={torrent.tracker}
+					style={{ color: 'var(--text-muted)' }}
+				>
+					{torrent.tracker}
+				</span>
+			)
 		default:
 			return null
 	}
@@ -147,7 +242,15 @@ interface Props {
 	columnOrder: string[]
 }
 
-export function TorrentRow({ torrent, selected, onSelect, onContextMenu, ratioThreshold, visibleColumns, columnOrder }: Props) {
+export function TorrentRow({
+	torrent,
+	selected,
+	onSelect,
+	onContextMenu,
+	ratioThreshold,
+	visibleColumns,
+	columnOrder,
+}: Props) {
 	const { label, type, isDownloading } = getStateInfo(torrent.state)
 	const progress = Math.round(torrent.progress * 100)
 	const isComplete = progress >= 100
@@ -176,21 +279,34 @@ export function TorrentRow({ torrent, selected, onSelect, onContextMenu, ratioTh
 						}}
 					>
 						{selected && (
-							<svg className="w-2.5 h-2.5" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+							<svg
+								className="w-2.5 h-2.5"
+								style={{ color: 'var(--text-muted)' }}
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={3}
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 							</svg>
 						)}
 					</div>
-					<span className="truncate font-medium text-sm" style={{ color: 'var(--text-secondary)' }} title={`${torrent.name}\nLast active: ${formatRelativeTime(torrent.last_activity)}`}>
+					<span
+						className="truncate font-medium text-sm"
+						style={{ color: 'var(--text-secondary)' }}
+						title={`${torrent.name}\nLast active: ${formatRelativeTime(torrent.last_activity)}`}
+					>
 						{torrent.name}
 					</span>
 				</div>
 			</td>
-			{columnOrder.filter(id => visibleColumns.has(id)).map(id => (
-				<td key={id} className="px-3 py-3">
-					{renderCell(id, torrent, cellContext)}
-				</td>
-			))}
+			{columnOrder
+				.filter((id) => visibleColumns.has(id))
+				.map((id) => (
+					<td key={id} className="px-3 py-3">
+						{renderCell(id, torrent, cellContext)}
+					</td>
+				))}
 		</tr>
 	)
 }

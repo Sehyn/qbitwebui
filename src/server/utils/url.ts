@@ -1,9 +1,4 @@
-const CLOUD_METADATA = [
-	'169.254.169.254',
-	'metadata.google.internal',
-	'metadata.aws.internal',
-	'169.254.170.2',
-]
+const CLOUD_METADATA = ['169.254.169.254', 'metadata.google.internal', 'metadata.aws.internal', '169.254.170.2']
 
 export function isUrlAllowed(urlString: string): { allowed: boolean; reason?: string } {
 	let url: URL

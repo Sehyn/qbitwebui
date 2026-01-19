@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
-import { listFiles, getDownloadUrl, checkWritable, deleteFiles, moveFiles, copyFiles, renameFile, type FileEntry } from '../api/files'
+import {
+	listFiles,
+	getDownloadUrl,
+	checkWritable,
+	deleteFiles,
+	moveFiles,
+	copyFiles,
+	renameFile,
+	type FileEntry,
+} from '../api/files'
 import { formatSize } from '../utils/format'
 
 function formatDate(timestamp: number): string {
@@ -26,10 +35,18 @@ function FolderPicker({ title, onConfirm, onCancel }: FolderPickerProps) {
 	useEffect(() => {
 		let cancelled = false
 		listFiles(pickerPath)
-			.then(files => { if (!cancelled) setFolders(files.filter(f => f.isDirectory)) })
-			.catch(() => { if (!cancelled) setFolders([]) })
-			.finally(() => { if (!cancelled) setLoading(false) })
-		return () => { cancelled = true }
+			.then((files) => {
+				if (!cancelled) setFolders(files.filter((f) => f.isDirectory))
+			})
+			.catch(() => {
+				if (!cancelled) setFolders([])
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false)
+			})
+		return () => {
+			cancelled = true
+		}
 	}, [pickerPath])
 
 	function navigateTo(newPath: string) {
@@ -44,12 +61,21 @@ function FolderPicker({ title, onConfirm, onCancel }: FolderPickerProps) {
 			<div
 				className="w-full max-w-md rounded-lg border shadow-xl"
 				style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
-				onClick={e => e.stopPropagation()}
+				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-					<h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+					<h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>
+						{title}
+					</h3>
 					<button onClick={onCancel} className="p-1 rounded hover:bg-[var(--bg-tertiary)]">
-						<svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+						<svg
+							className="w-5 h-5"
+							style={{ color: 'var(--text-muted)' }}
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+						>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
 						</svg>
 					</button>
@@ -90,14 +116,19 @@ function FolderPicker({ title, onConfirm, onCancel }: FolderPickerProps) {
 							</div>
 						) : (
 							<div className="p-2 space-y-1">
-								{folders.map(folder => (
+								{folders.map((folder) => (
 									<button
 										key={folder.name}
 										onClick={() => navigateTo(pickerPath === '/' ? `/${folder.name}` : `${pickerPath}/${folder.name}`)}
 										className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left hover:bg-[var(--bg-tertiary)]"
 										style={{ color: 'var(--text-primary)' }}
 									>
-										<svg className="w-4 h-4 shrink-0" style={{ color: 'var(--warning)' }} fill="currentColor" viewBox="0 0 24 24">
+										<svg
+											className="w-4 h-4 shrink-0"
+											style={{ color: 'var(--warning)' }}
+											fill="currentColor"
+											viewBox="0 0 24 24"
+										>
 											<path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" />
 										</svg>
 										{folder.name}
@@ -192,7 +223,7 @@ export function FileBrowser() {
 
 	function toggleSelectAll() {
 		if (selected.size === files.length) setSelected(new Set())
-		else setSelected(new Set(files.map(f => f.name)))
+		else setSelected(new Set(files.map((f) => f.name)))
 	}
 
 	async function handleDelete() {
@@ -254,14 +285,24 @@ export function FileBrowser() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center gap-2 p-3 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+			<div
+				className="flex items-center gap-2 p-3 rounded-lg border"
+				style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+			>
 				<button
 					onClick={handleBack}
 					disabled={path === '/'}
 					className="p-1.5 rounded-md transition-colors disabled:opacity-30"
 					style={{ backgroundColor: 'var(--bg-tertiary)' }}
 				>
-					<svg className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<svg
+						className="w-4 h-4"
+						style={{ color: 'var(--text-secondary)' }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={2}
+					>
 						<path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 					</svg>
 				</button>
@@ -292,8 +333,19 @@ export function FileBrowser() {
 					style={{ backgroundColor: 'var(--bg-tertiary)' }}
 					title="Refresh"
 				>
-					<svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} style={{ color: 'var(--text-secondary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+					<svg
+						className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+						style={{ color: 'var(--text-secondary)' }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth={2}
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+						/>
 					</svg>
 				</button>
 			</div>
@@ -312,7 +364,11 @@ export function FileBrowser() {
 								onClick={openRename}
 								disabled={actionLoading}
 								className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 border"
-								style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+								style={{
+									backgroundColor: 'var(--bg-primary)',
+									borderColor: 'var(--border)',
+									color: 'var(--text-primary)',
+								}}
 							>
 								Rename
 							</button>
@@ -321,7 +377,11 @@ export function FileBrowser() {
 							onClick={() => setFolderPickerMode('move')}
 							disabled={actionLoading}
 							className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 border"
-							style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+							style={{
+								backgroundColor: 'var(--bg-primary)',
+								borderColor: 'var(--border)',
+								color: 'var(--text-primary)',
+							}}
 						>
 							Move
 						</button>
@@ -329,7 +389,11 @@ export function FileBrowser() {
 							onClick={() => setFolderPickerMode('copy')}
 							disabled={actionLoading}
 							className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 border"
-							style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+							style={{
+								backgroundColor: 'var(--bg-primary)',
+								borderColor: 'var(--border)',
+								color: 'var(--text-primary)',
+							}}
 						>
 							Copy
 						</button>
@@ -346,12 +410,18 @@ export function FileBrowser() {
 			)}
 
 			{error && (
-				<div className="p-4 rounded-lg text-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--error) 10%, transparent)', color: 'var(--error)' }}>
+				<div
+					className="p-4 rounded-lg text-sm"
+					style={{ backgroundColor: 'color-mix(in srgb, var(--error) 10%, transparent)', color: 'var(--error)' }}
+				>
 					{error}
 				</div>
 			)}
 
-			<div className="rounded-lg border overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+			<div
+				className="rounded-lg border overflow-hidden"
+				style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+			>
 				<table className="w-full">
 					<thead>
 						<tr className="border-b" style={{ borderColor: 'var(--border)' }}>
@@ -361,34 +431,65 @@ export function FileBrowser() {
 										onClick={toggleSelectAll}
 										className="w-4 h-4 rounded flex items-center justify-center cursor-pointer border"
 										style={{
-											backgroundColor: files.length > 0 && selected.size === files.length ? 'var(--accent)' : 'transparent',
-											borderColor: files.length > 0 && selected.size === files.length ? 'var(--accent)' : 'var(--text-muted)'
+											backgroundColor:
+												files.length > 0 && selected.size === files.length ? 'var(--accent)' : 'transparent',
+											borderColor:
+												files.length > 0 && selected.size === files.length ? 'var(--accent)' : 'var(--text-muted)',
 										}}
 									>
 										{files.length > 0 && selected.size === files.length && (
-											<svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+											<svg
+												className="w-3 h-3 text-white"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+												strokeWidth={3}
+											>
 												<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 											</svg>
 										)}
 									</div>
 								</th>
 							)}
-							<th className="text-left px-4 py-3 text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Name</th>
-							<th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-wider w-28" style={{ color: 'var(--text-muted)' }}>Size</th>
-							<th className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-wider w-44" style={{ color: 'var(--text-muted)' }}>Modified</th>
+							<th
+								className="text-left px-4 py-3 text-[10px] font-medium uppercase tracking-wider"
+								style={{ color: 'var(--text-muted)' }}
+							>
+								Name
+							</th>
+							<th
+								className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-wider w-28"
+								style={{ color: 'var(--text-muted)' }}
+							>
+								Size
+							</th>
+							<th
+								className="text-right px-4 py-3 text-[10px] font-medium uppercase tracking-wider w-44"
+								style={{ color: 'var(--text-muted)' }}
+							>
+								Modified
+							</th>
 							<th className="w-16"></th>
 						</tr>
 					</thead>
 					<tbody>
 						{loading && files.length === 0 ? (
 							<tr>
-								<td colSpan={writable ? 5 : 4} className="px-4 py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+								<td
+									colSpan={writable ? 5 : 4}
+									className="px-4 py-8 text-center text-sm"
+									style={{ color: 'var(--text-muted)' }}
+								>
 									Loading...
 								</td>
 							</tr>
 						) : files.length === 0 ? (
 							<tr>
-								<td colSpan={writable ? 5 : 4} className="px-4 py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+								<td
+									colSpan={writable ? 5 : 4}
+									className="px-4 py-8 text-center text-sm"
+									style={{ color: 'var(--text-muted)' }}
+								>
 									Empty directory
 								</td>
 							</tr>
@@ -406,11 +507,17 @@ export function FileBrowser() {
 												className="w-4 h-4 rounded flex items-center justify-center cursor-pointer border"
 												style={{
 													backgroundColor: selected.has(file.name) ? 'var(--accent)' : 'transparent',
-													borderColor: selected.has(file.name) ? 'var(--accent)' : 'var(--text-muted)'
+													borderColor: selected.has(file.name) ? 'var(--accent)' : 'var(--text-muted)',
 												}}
 											>
 												{selected.has(file.name) && (
-													<svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+													<svg
+														className="w-3 h-3 text-white"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+														strokeWidth={3}
+													>
 														<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 													</svg>
 												)}
@@ -424,14 +531,24 @@ export function FileBrowser() {
 												className="flex items-center gap-2 text-sm hover:underline"
 												style={{ color: 'var(--text-primary)' }}
 											>
-												<svg className="w-4 h-4 shrink-0" style={{ color: 'var(--warning)' }} fill="currentColor" viewBox="0 0 24 24">
+												<svg
+													className="w-4 h-4 shrink-0"
+													style={{ color: 'var(--warning)' }}
+													fill="currentColor"
+													viewBox="0 0 24 24"
+												>
 													<path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" />
 												</svg>
 												<span className="truncate">{file.name}</span>
 											</button>
 										) : (
 											<div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
-												<svg className="w-4 h-4 shrink-0" style={{ color: 'var(--text-muted)' }} fill="currentColor" viewBox="0 0 24 24">
+												<svg
+													className="w-4 h-4 shrink-0"
+													style={{ color: 'var(--text-muted)' }}
+													fill="currentColor"
+													viewBox="0 0 24 24"
+												>
 													<path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V7.875L14.25 1.5H5.625z" />
 													<path d="M14.25 1.5v5.25a1.125 1.125 0 001.125 1.125h5.25" />
 												</svg>
@@ -452,8 +569,18 @@ export function FileBrowser() {
 											style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
 											title={file.isDirectory ? 'Download as .tar' : 'Download'}
 										>
-											<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-												<path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+											<svg
+												className="w-3.5 h-3.5"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+												strokeWidth={2}
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+												/>
 											</svg>
 										</a>
 									</td>
@@ -473,23 +600,32 @@ export function FileBrowser() {
 			)}
 
 			{renameTarget && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setRenameTarget(null)}>
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					onClick={() => setRenameTarget(null)}
+				>
 					<div
 						className="w-full max-w-sm rounded-lg border shadow-xl"
 						style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
-						onClick={e => e.stopPropagation()}
+						onClick={(e) => e.stopPropagation()}
 					>
 						<div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-							<h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>Rename</h3>
+							<h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>
+								Rename
+							</h3>
 						</div>
 						<div className="p-4">
 							<input
 								type="text"
 								value={renameValue}
-								onChange={e => setRenameValue(e.target.value)}
-								onKeyDown={e => e.key === 'Enter' && handleRename()}
+								onChange={(e) => setRenameValue(e.target.value)}
+								onKeyDown={(e) => e.key === 'Enter' && handleRename()}
 								className="w-full px-3 py-2 rounded-md border text-sm"
-								style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+								style={{
+									backgroundColor: 'var(--bg-secondary)',
+									borderColor: 'var(--border)',
+									color: 'var(--text-primary)',
+								}}
 								autoFocus
 							/>
 						</div>
@@ -515,14 +651,19 @@ export function FileBrowser() {
 			)}
 
 			{deleteConfirm && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDeleteConfirm(false)}>
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					onClick={() => setDeleteConfirm(false)}
+				>
 					<div
 						className="w-full max-w-sm rounded-lg border shadow-xl"
 						style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)' }}
-						onClick={e => e.stopPropagation()}
+						onClick={(e) => e.stopPropagation()}
 					>
 						<div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-							<h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>Confirm Delete</h3>
+							<h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>
+								Confirm Delete
+							</h3>
 						</div>
 						<div className="p-4">
 							<p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -530,8 +671,10 @@ export function FileBrowser() {
 							</p>
 							{selected.size <= 5 && (
 								<ul className="mt-3 text-sm space-y-1" style={{ color: 'var(--text-muted)' }}>
-									{Array.from(selected).map(name => (
-										<li key={name} className="truncate">• {name}</li>
+									{Array.from(selected).map((name) => (
+										<li key={name} className="truncate">
+											• {name}
+										</li>
 									))}
 								</ul>
 							)}

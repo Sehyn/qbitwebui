@@ -49,5 +49,5 @@ export function sortResults<T extends { seeders?: number; size: number; publishD
 
 export function filterResults<T extends { title: string }>(results: T[], filter: string): T[] {
 	if (!filter) return results
-	return results.filter(r => r.title.toLowerCase().includes(filter.toLowerCase()))
+	return results.filter((r) => r.title.toLowerCase().includes(filter.toLowerCase()))
 }
