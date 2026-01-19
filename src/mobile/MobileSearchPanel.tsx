@@ -12,6 +12,7 @@ import {
 	type SearchResult,
 } from '../api/integrations'
 import { type Instance } from '../api/instances'
+import { getCategories, type Category } from '../api/qbittorrent'
 import { formatSize } from '../utils/format'
 import { extractTags, sortResults, filterResults, type SortKey } from '../utils/search'
 
@@ -48,6 +49,11 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 	const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
 	const [grabbing, setGrabbing] = useState<string | null>(null)
 	const [grabResult, setGrabResult] = useState<{ guid: string; success: boolean; message?: string } | null>(null)
+	const [grabInstance, setGrabInstance] = useState<number | null>(null)
+	const [grabCategories, setGrabCategories] = useState<Record<string, Category>>({})
+	const [grabCategory, setGrabCategory] = useState('')
+	const [grabSavepath, setGrabSavepath] = useState('')
+	const [loadingCategories, setLoadingCategories] = useState(false)
 	const [showIndexerPicker, setShowIndexerPicker] = useState(false)
 	const [showIntegrationPicker, setShowIntegrationPicker] = useState(false)
 	const [showGrabSheet, setShowGrabSheet] = useState<SearchResult | null>(null)
@@ -57,6 +63,7 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 	const [filter, setFilter] = useState('')
 	const [showSortPicker, setShowSortPicker] = useState(false)
 	const [showFilterPicker, setShowFilterPicker] = useState(false)
+	const [showCategoryPicker, setShowCategoryPicker] = useState(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
@@ -75,6 +82,30 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 				.catch(() => setIndexers([]))
 		}
 	}, [selectedIntegration])
+
+	useEffect(() => {
+		if (grabInstance) {
+			setLoadingCategories(true)
+			getCategories(grabInstance)
+				.then(setGrabCategories)
+				.catch(() => setGrabCategories({}))
+				.finally(() => setLoadingCategories(false))
+		} else {
+			setGrabCategories({})
+		}
+	}, [grabInstance])
+
+	useEffect(() => {
+		if (showGrabSheet) {
+			setGrabCategory('')
+			setGrabSavepath('')
+			if (instances.length === 1) {
+				setGrabInstance(instances[0].id)
+			} else {
+				setGrabInstance(null)
+			}
+		}
+	}, [showGrabSheet, instances])
 
 	async function handleSearch(e: React.FormEvent) {
 		e.preventDefault()
@@ -148,6 +179,9 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 		if (!selectedIntegration) return
 		setGrabbing(result.guid)
 		setGrabResult(null)
+		const options: { category?: string; savepath?: string } = {}
+		if (grabCategory) options.category = grabCategory
+		if (grabSavepath.trim()) options.savepath = grabSavepath.trim()
 		try {
 			await grabRelease(
 				selectedIntegration.id,
@@ -157,7 +191,8 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 					downloadUrl: result.downloadUrl,
 					magnetUrl: result.magnetUrl,
 				},
-				instanceId
+				instanceId,
+				Object.keys(options).length > 0 ? options : undefined
 			)
 			setGrabResult({ guid: result.guid, success: true })
 			setShowGrabSheet(null)
@@ -827,7 +862,7 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 						onClick={() => setShowGrabSheet(null)}
 					/>
 					<div
-						className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t"
+						className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t max-h-[85vh] overflow-hidden flex flex-col"
 						style={{
 							backgroundColor: 'var(--bg-primary)',
 							borderColor: 'var(--border)',
@@ -847,42 +882,95 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 								<span style={{ color: '#a6e3a1' }}>{showGrabSheet.seeders} seeds</span>
 							</div>
 						</div>
-						<div className="px-4 pb-4 space-y-2">
-							<div className="text-xs font-medium px-1 pb-1" style={{ color: 'var(--text-muted)' }}>
-								Send to instance
-							</div>
-							{instances.map((instance) => (
+						<div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
+							{instances.length > 1 && (
+								<div>
+									<div className="text-xs font-medium px-1 pb-2" style={{ color: 'var(--text-muted)' }}>
+										Instance
+									</div>
+									<div className="space-y-2">
+										{instances.map((instance) => (
+											<button
+												key={instance.id}
+												onClick={() => setGrabInstance(grabInstance === instance.id ? null : instance.id)}
+												className="w-full flex items-center justify-between px-4 py-3 rounded-xl border active:scale-[0.98] transition-transform"
+												style={{
+													backgroundColor: grabInstance === instance.id ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
+													borderColor: grabInstance === instance.id ? 'var(--accent)' : 'var(--border)',
+												}}
+											>
+												<span style={{ color: 'var(--text-primary)' }}>{instance.label}</span>
+												{grabInstance === instance.id && (
+													<svg
+														className="w-5 h-5"
+														style={{ color: 'var(--accent)' }}
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+														strokeWidth={2}
+													>
+														<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+													</svg>
+												)}
+											</button>
+										))}
+									</div>
+								</div>
+							)}
+							<div>
+								<div className="text-xs font-medium px-1 pb-2" style={{ color: 'var(--text-muted)' }}>
+									Category
+								</div>
 								<button
-									key={instance.id}
-									onClick={() => handleGrab(showGrabSheet, instance.id)}
-									disabled={grabbing === showGrabSheet.guid}
-									className="w-full flex items-center justify-between px-4 py-3 rounded-xl border disabled:opacity-50 active:scale-[0.98] transition-transform"
-									style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+									type="button"
+									onClick={() => grabInstance && setShowCategoryPicker(true)}
+									disabled={!grabInstance || loadingCategories}
+									className="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-base disabled:opacity-50"
+									style={{
+										backgroundColor: 'var(--bg-secondary)',
+										borderColor: 'var(--border)',
+										color: grabCategory ? 'var(--text-primary)' : 'var(--text-muted)',
+									}}
 								>
-									<span style={{ color: 'var(--text-primary)' }}>{instance.label}</span>
-									{grabbing === showGrabSheet.guid ? (
-										<div
-											className="w-5 h-5 border-2 rounded-full animate-spin"
-											style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }}
-										/>
-									) : (
-										<svg
-											className="w-5 h-5"
-											style={{ color: 'var(--accent)' }}
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-											strokeWidth={2}
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-											/>
-										</svg>
-									)}
+									<span>{loadingCategories ? 'Loading...' : grabCategory || 'None'}</span>
+									<svg
+										className="w-4 h-4 shrink-0"
+										style={{ color: 'var(--text-muted)' }}
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										strokeWidth={2}
+									>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+									</svg>
 								</button>
-							))}
+							</div>
+							<div>
+								<div className="text-xs font-medium px-1 pb-2" style={{ color: 'var(--text-muted)' }}>
+									Save Path
+								</div>
+								<input
+									type="text"
+									value={grabSavepath}
+									onChange={(e) => setGrabSavepath(e.target.value)}
+									disabled={!grabInstance}
+									placeholder="Default"
+									className="w-full px-4 py-3 rounded-xl border text-base disabled:opacity-50"
+									style={{
+										backgroundColor: 'var(--bg-secondary)',
+										borderColor: 'var(--border)',
+										color: 'var(--text-primary)',
+									}}
+								/>
+							</div>
+							<button
+								onClick={() => grabInstance && handleGrab(showGrabSheet, grabInstance)}
+								disabled={!grabInstance || grabbing === showGrabSheet.guid}
+								className="w-full py-3.5 rounded-xl text-base font-medium disabled:opacity-50 active:scale-[0.98] transition-transform"
+								style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
+							>
+								{grabbing === showGrabSheet.guid ? 'Grabbing...' : 'Grab'}
+							</button>
 						</div>
 					</div>
 				</>
@@ -1029,6 +1117,82 @@ export function MobileSearchPanel({ instances, onBack }: Props) {
 									<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
 										{count}
 									</span>
+								</button>
+							))}
+						</div>
+					</div>
+				</>
+			)}
+
+			{showCategoryPicker && (
+				<>
+					<div
+						className="fixed inset-0 z-[60]"
+						style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+						onClick={() => setShowCategoryPicker(false)}
+					/>
+					<div
+						className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t max-h-[70vh] overflow-hidden"
+						style={{
+							backgroundColor: 'var(--bg-primary)',
+							borderColor: 'var(--border)',
+							paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+						}}
+					>
+						<div className="flex justify-center pt-3 pb-2">
+							<div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--text-muted)' }} />
+						</div>
+						<div className="px-5 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+							<h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+								Category
+							</h3>
+						</div>
+						<div className="overflow-y-auto max-h-[50vh] p-2">
+							<button
+								onClick={() => {
+									setGrabCategory('')
+									setShowCategoryPicker(false)
+								}}
+								className="w-full flex items-center justify-between px-4 py-3 rounded-xl"
+								style={{ backgroundColor: !grabCategory ? 'var(--bg-tertiary)' : 'transparent' }}
+							>
+								<span style={{ color: !grabCategory ? 'var(--accent)' : 'var(--text-primary)' }}>None</span>
+								{!grabCategory && (
+									<svg
+										className="w-5 h-5"
+										style={{ color: 'var(--accent)' }}
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										strokeWidth={2}
+									>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+									</svg>
+								)}
+							</button>
+							{Object.keys(grabCategories).map((cat) => (
+								<button
+									key={cat}
+									onClick={() => {
+										setGrabCategory(cat)
+										setShowCategoryPicker(false)
+									}}
+									className="w-full flex items-center justify-between px-4 py-3 rounded-xl"
+									style={{ backgroundColor: grabCategory === cat ? 'var(--bg-tertiary)' : 'transparent' }}
+								>
+									<span style={{ color: grabCategory === cat ? 'var(--accent)' : 'var(--text-primary)' }}>{cat}</span>
+									{grabCategory === cat && (
+										<svg
+											className="w-5 h-5"
+											style={{ color: 'var(--accent)' }}
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											strokeWidth={2}
+										>
+											<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+										</svg>
+									)}
 								</button>
 							))}
 						</div>

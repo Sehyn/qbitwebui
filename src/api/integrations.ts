@@ -103,13 +103,14 @@ export async function search(
 export async function grabRelease(
 	integrationId: number,
 	release: { guid: string; indexerId: number; downloadUrl?: string; magnetUrl?: string },
-	instanceId: number
+	instanceId: number,
+	options?: { category?: string; savepath?: string }
 ): Promise<void> {
 	const res = await fetch(`/api/integrations/${integrationId}/grab`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		credentials: 'include',
-		body: JSON.stringify({ ...release, instanceId }),
+		body: JSON.stringify({ ...release, instanceId, ...options }),
 	})
 	if (!res.ok) {
 		const err = await res.json()

@@ -222,6 +222,8 @@ integrations.post('/:id/grab', async (c) => {
 		downloadUrl?: string
 		magnetUrl?: string
 		instanceId: number
+		category?: string
+		savepath?: string
 	}>()
 
 	if (!body.instanceId) {
@@ -252,6 +254,13 @@ integrations.post('/:id/grab', async (c) => {
 		}
 
 		const formData = new FormData()
+
+		if (body.category) {
+			formData.append('category', body.category)
+		}
+		if (body.savepath) {
+			formData.append('savepath', body.savepath)
+		}
 
 		if (body.magnetUrl) {
 			formData.append('urls', body.magnetUrl)

@@ -12,6 +12,7 @@ import {
 	type SearchResult,
 } from '../api/integrations'
 import { getInstances, type Instance } from '../api/instances'
+import { getCategories, type Category } from '../api/qbittorrent'
 import { extractTags, sortResults, filterResults, type SortKey } from '../utils/search'
 
 function formatSize(bytes: number): string {
@@ -48,6 +49,12 @@ export function SearchPanel() {
 	const [submitting, setSubmitting] = useState(false)
 	const [grabbing, setGrabbing] = useState<string | null>(null)
 	const [grabResult, setGrabResult] = useState<{ guid: string; success: boolean; message?: string } | null>(null)
+	const [grabModal, setGrabModal] = useState<SearchResult | null>(null)
+	const [grabInstance, setGrabInstance] = useState<number | null>(null)
+	const [grabCategories, setGrabCategories] = useState<Record<string, Category>>({})
+	const [grabCategory, setGrabCategory] = useState('')
+	const [grabSavepath, setGrabSavepath] = useState('')
+	const [loadingCategories, setLoadingCategories] = useState(false)
 	const [sortKey, setSortKey] = useState<SortKey>('seeders')
 	const [sortAsc, setSortAsc] = useState(false)
 	const [testing, setTesting] = useState(false)
@@ -58,7 +65,8 @@ export function SearchPanel() {
 	const [indexerDropdownOpen, setIndexerDropdownOpen] = useState(false)
 	const [filter, setFilter] = useState('')
 	const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
-	const [grabDropdownOpen, setGrabDropdownOpen] = useState<string | null>(null)
+	const [instanceDropdownOpen, setInstanceDropdownOpen] = useState(false)
+	const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false)
 
 	const availableTags = extractTags(results.map((r) => r.title))
 
@@ -85,6 +93,18 @@ export function SearchPanel() {
 				.catch(() => setIndexers([]))
 		}
 	}, [selectedIntegration])
+
+	useEffect(() => {
+		if (grabInstance) {
+			setLoadingCategories(true)
+			getCategories(grabInstance)
+				.then(setGrabCategories)
+				.catch(() => setGrabCategories({}))
+				.finally(() => setLoadingCategories(false))
+		} else {
+			setGrabCategories({})
+		}
+	}, [grabInstance])
 
 	async function handleSearch(e: React.FormEvent) {
 		e.preventDefault()
@@ -160,28 +180,51 @@ export function SearchPanel() {
 		}
 	}
 
-	async function handleGrab(result: SearchResult, instanceId: number) {
-		if (!selectedIntegration) {
-			setGrabResult({ guid: result.guid, success: false, message: 'No integration selected' })
-			return
+	function openGrabModal(result: SearchResult) {
+		setGrabModal(result)
+		setGrabCategory('')
+		setGrabSavepath('')
+		if (instances.length === 1) {
+			setGrabInstance(instances[0].id)
+		} else {
+			setGrabInstance(null)
 		}
-		setGrabbing(result.guid)
+	}
+
+	function closeGrabModal() {
+		setGrabModal(null)
+		setGrabInstance(null)
+		setGrabCategories({})
+		setGrabCategory('')
+		setGrabSavepath('')
+		setInstanceDropdownOpen(false)
+		setCategoryDropdownOpen(false)
+	}
+
+	async function handleGrab() {
+		if (!selectedIntegration || !grabModal || !grabInstance) return
+		setGrabbing(grabModal.guid)
 		setGrabResult(null)
+		const options: { category?: string; savepath?: string } = {}
+		if (grabCategory) options.category = grabCategory
+		if (grabSavepath.trim()) options.savepath = grabSavepath.trim()
 		try {
 			await grabRelease(
 				selectedIntegration.id,
 				{
-					guid: result.guid,
-					indexerId: result.indexerId,
-					downloadUrl: result.downloadUrl,
-					magnetUrl: result.magnetUrl,
+					guid: grabModal.guid,
+					indexerId: grabModal.indexerId,
+					downloadUrl: grabModal.downloadUrl,
+					magnetUrl: grabModal.magnetUrl,
 				},
-				instanceId
+				grabInstance,
+				Object.keys(options).length > 0 ? options : undefined
 			)
-			setGrabResult({ guid: result.guid, success: true })
+			setGrabResult({ guid: grabModal.guid, success: true })
+			closeGrabModal()
 			setTimeout(() => setGrabResult(null), 3000)
 		} catch (err) {
-			setGrabResult({ guid: result.guid, success: false, message: err instanceof Error ? err.message : 'Failed' })
+			setGrabResult({ guid: grabModal.guid, success: false, message: err instanceof Error ? err.message : 'Failed' })
 		} finally {
 			setGrabbing(null)
 		}
@@ -702,58 +745,15 @@ export function SearchPanel() {
 													<span className="text-xs" style={{ color: 'var(--text-muted)' }}>
 														No instances
 													</span>
-												) : instances.length === 1 ? (
+												) : (
 													<button
-														onClick={() => handleGrab(result, instances[0].id)}
+														onClick={() => openGrabModal(result)}
 														disabled={grabbing === result.guid}
 														className="px-3 py-1 rounded text-xs font-medium disabled:opacity-50"
 														style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
 													>
 														{grabbing === result.guid ? '...' : 'Grab'}
 													</button>
-												) : (
-													<div className="relative inline-block">
-														<button
-															onClick={() => setGrabDropdownOpen(grabDropdownOpen === result.guid ? null : result.guid)}
-															disabled={grabbing === result.guid}
-															className="flex items-center gap-1 px-3 py-1 rounded text-xs font-medium disabled:opacity-50"
-															style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
-														>
-															{grabbing === result.guid ? '...' : 'Grab'}
-															<svg
-																className="w-3 h-3"
-																fill="none"
-																viewBox="0 0 24 24"
-																stroke="currentColor"
-																strokeWidth={2.5}
-															>
-																<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-															</svg>
-														</button>
-														{grabDropdownOpen === result.guid && (
-															<>
-																<div className="fixed inset-0 z-10" onClick={() => setGrabDropdownOpen(null)} />
-																<div
-																	className="absolute right-0 top-full mt-1 z-20 min-w-[140px] rounded-lg border shadow-lg overflow-hidden"
-																	style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
-																>
-																	{instances.map((i) => (
-																		<button
-																			key={i.id}
-																			onClick={() => {
-																				handleGrab(result, i.id)
-																				setGrabDropdownOpen(null)
-																			}}
-																			className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--bg-tertiary)] transition-colors"
-																			style={{ color: 'var(--text-primary)' }}
-																		>
-																			{i.label}
-																		</button>
-																	))}
-																</div>
-															</>
-														)}
-													</div>
 												)}
 											</td>
 										</tr>
@@ -853,6 +853,212 @@ export function SearchPanel() {
 								style={{ backgroundColor: 'var(--error)', color: 'white' }}
 							>
 								Delete
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{grabModal && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center p-4"
+					style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+					onClick={closeGrabModal}
+				>
+					<div
+						className="w-full max-w-md rounded-xl border p-6"
+						style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+						onClick={(e) => e.stopPropagation()}
+					>
+						<h3 className="text-lg font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+							Grab Torrent
+						</h3>
+						<p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-muted)' }} title={grabModal.title}>
+							{grabModal.title}
+						</p>
+						<div className="space-y-4">
+							{instances.length > 1 && (
+								<div>
+									<label
+										className="block text-xs font-medium mb-2 uppercase tracking-wider"
+										style={{ color: 'var(--text-muted)' }}
+									>
+										Instance
+									</label>
+									<div className="relative">
+										<button
+											type="button"
+											onClick={() => setInstanceDropdownOpen(!instanceDropdownOpen)}
+											className="w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm"
+											style={{
+												backgroundColor: 'var(--bg-tertiary)',
+												borderColor: 'var(--border)',
+												color: grabInstance ? 'var(--text-primary)' : 'var(--text-muted)',
+											}}
+										>
+											<span>
+												{grabInstance ? instances.find((i) => i.id === grabInstance)?.label : 'Select instance...'}
+											</span>
+											<svg
+												className={`w-4 h-4 transition-transform ${instanceDropdownOpen ? 'rotate-180' : ''}`}
+												style={{ color: 'var(--text-muted)' }}
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+												strokeWidth={2}
+											>
+												<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+											</svg>
+										</button>
+										{instanceDropdownOpen && (
+											<>
+												<div className="fixed inset-0 z-10" onClick={() => setInstanceDropdownOpen(false)} />
+												<div
+													className="absolute left-0 right-0 top-full mt-1 z-20 max-h-48 overflow-y-auto rounded-lg border shadow-lg"
+													style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+												>
+													{instances.map((i) => (
+														<button
+															key={i.id}
+															type="button"
+															onClick={() => {
+																setGrabInstance(i.id)
+																setInstanceDropdownOpen(false)
+															}}
+															className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-tertiary)] transition-colors"
+															style={{
+																color: grabInstance === i.id ? 'var(--accent)' : 'var(--text-primary)',
+																backgroundColor:
+																	grabInstance === i.id
+																		? 'color-mix(in srgb, var(--accent) 10%, transparent)'
+																		: 'transparent',
+															}}
+														>
+															{i.label}
+														</button>
+													))}
+												</div>
+											</>
+										)}
+									</div>
+								</div>
+							)}
+							<div>
+								<label
+									className="block text-xs font-medium mb-2 uppercase tracking-wider"
+									style={{ color: 'var(--text-muted)' }}
+								>
+									Category
+								</label>
+								<div className="relative">
+									<button
+										type="button"
+										onClick={() => grabInstance && !loadingCategories && setCategoryDropdownOpen(!categoryDropdownOpen)}
+										disabled={!grabInstance || loadingCategories}
+										className="w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm disabled:opacity-50"
+										style={{
+											backgroundColor: 'var(--bg-tertiary)',
+											borderColor: 'var(--border)',
+											color: grabCategory ? 'var(--text-primary)' : 'var(--text-muted)',
+										}}
+									>
+										<span>{loadingCategories ? 'Loading...' : grabCategory || 'None'}</span>
+										<svg
+											className={`w-4 h-4 transition-transform ${categoryDropdownOpen ? 'rotate-180' : ''}`}
+											style={{ color: 'var(--text-muted)' }}
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											strokeWidth={2}
+										>
+											<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+										</svg>
+									</button>
+									{categoryDropdownOpen && (
+										<>
+											<div className="fixed inset-0 z-10" onClick={() => setCategoryDropdownOpen(false)} />
+											<div
+												className="absolute left-0 right-0 top-full mt-1 z-20 max-h-48 overflow-y-auto rounded-lg border shadow-lg"
+												style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+											>
+												<button
+													type="button"
+													onClick={() => {
+														setGrabCategory('')
+														setCategoryDropdownOpen(false)
+													}}
+													className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-tertiary)] transition-colors"
+													style={{
+														color: !grabCategory ? 'var(--accent)' : 'var(--text-primary)',
+														backgroundColor: !grabCategory
+															? 'color-mix(in srgb, var(--accent) 10%, transparent)'
+															: 'transparent',
+													}}
+												>
+													None
+												</button>
+												{Object.keys(grabCategories).map((cat) => (
+													<button
+														key={cat}
+														type="button"
+														onClick={() => {
+															setGrabCategory(cat)
+															setCategoryDropdownOpen(false)
+														}}
+														className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-tertiary)] transition-colors"
+														style={{
+															color: grabCategory === cat ? 'var(--accent)' : 'var(--text-primary)',
+															backgroundColor:
+																grabCategory === cat
+																	? 'color-mix(in srgb, var(--accent) 10%, transparent)'
+																	: 'transparent',
+														}}
+													>
+														{cat}
+													</button>
+												))}
+											</div>
+										</>
+									)}
+								</div>
+							</div>
+							<div>
+								<label
+									className="block text-xs font-medium mb-2 uppercase tracking-wider"
+									style={{ color: 'var(--text-muted)' }}
+								>
+									Save Path
+								</label>
+								<input
+									type="text"
+									value={grabSavepath}
+									onChange={(e) => setGrabSavepath(e.target.value)}
+									disabled={!grabInstance}
+									placeholder="Default"
+									className="w-full px-3 py-2 rounded-lg border text-sm disabled:opacity-50"
+									style={{
+										backgroundColor: 'var(--bg-tertiary)',
+										borderColor: 'var(--border)',
+										color: 'var(--text-primary)',
+									}}
+								/>
+							</div>
+						</div>
+						<div className="flex gap-3 justify-end mt-6">
+							<button
+								onClick={closeGrabModal}
+								className="px-4 py-2 rounded-lg text-sm border"
+								style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+							>
+								Cancel
+							</button>
+							<button
+								onClick={handleGrab}
+								disabled={!grabInstance || grabbing === grabModal.guid}
+								className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+								style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' }}
+							>
+								{grabbing === grabModal.guid ? 'Grabbing...' : 'Grab'}
 							</button>
 						</div>
 					</div>
