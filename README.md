@@ -42,6 +42,7 @@ Built with [React](https://react.dev/), [Hono](https://hono.dev/), and [Bun](htt
 ## Features
 
 - **Multi-instance** - Manage multiple qBittorrent instances from one dashboard
+- **Cross seed** - Automatic cross seed directly in qbitwebui. (experimental)
 - **Instance speed management** - Easily control global/alternative speed limits per instance
 - **Instance statistics** - Overview of all instances with status, speeds, torrent counts
 - **User accounts** - Register/login with secure session management
@@ -119,6 +120,11 @@ React 19, TypeScript, Tailwind CSS v4, Vite, TanStack Query, Hono, SQLite, Bun
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Maciejonos/qbitwebui&type=date&legend=top-left)](https://www.star-history.com/#Maciejonos/qbitwebui&type=date&legend=top-left)
+## Credits
+
+Big thanks to [cross-seed](https://github.com/cross-seed/cross-seed). A huge chunk of Qbitwebui cross seed implementation is basically taken from cross-seed directly, or ported and slightly adjusted. Qbitwebui is of course in no way associated or endorsed by cross-seed.
+
+I highly recommend to check cross-seed out, if you want something very reliable. 
 
 ## License
 
